@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master AI App</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Montserrat:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS Variables for Theming */
+        :root {
+            --primary-bg-start: #1a1a2e;
+            --primary-bg-end: #0f3460;
+            --sidebar-bg: #1b2a41;
+            --sidebar-item-hover-bg: #2c3e50;
+            --chat-bg: #1b2a41;
+            --chat-messages-bg: #0f1a2a;
+            --user-message-bg: #3a506b;
+            --ai-message-bg: #6a0572;
+            --active-item-gradient-start: #6a0572;
+            --active-item-gradient-end: #8b008b;
+            --glow-color-light: rgba(173, 216, 230, 0.7);
+            --glow-color-dark: rgba(173, 216, 230, 0.5);
+            --text-color-primary: #e0e0e0;
+            --text-color-secondary: #c0c0c0;
+            --brightness-filter: brightness(100%); /* Default brightness */
+        }
+
+        /* Theme 1: Deep Blue (Default) */
+        .theme-blue {
+            --primary-bg-start: #1a1a2e;
+            --primary-bg-end: #0f3460;
+            --sidebar-bg: #1b2a41;
+            --sidebar-item-hover-bg: #2c3e50;
+            --chat-bg: #1b2a41;
+            --chat-messages-bg: #0f1a2a;
+            --user-message-bg: #3a506b;
+            --ai-message-bg: #6a0572;
+            --active-item-gradient-start: #6a0572;
+            --active-item-gradient-end: #8b008b;
+            --glow-color-light: rgba(173, 216, 230, 0.7);
+            --glow-color-dark: rgba(173, 216, 230, 0.5);
+        }
+
+        /* Theme 2: Emerald Green */
+        .theme-green {
+            --primary-bg-start: #0a2e2a;
+            --primary-bg-end: #0f403e;
+            --sidebar-bg: #1a3a3a;
+            --sidebar-item-hover-bg: #2a4a4a;
+            --chat-bg: #1a3a3a;
+            --chat-messages-bg: #0a2a2a;
+            --user-message-bg: #3a6b50;
+            --ai-message-bg: #008080;
+            --active-item-gradient-start: #008080;
+            --active-item-gradient-end: #00b3b3;
+            --glow-color-light: rgba(144, 238, 144, 0.7);
+            --glow-color-dark: rgba(144, 238, 144, 0.5);
+        }
+
+        /* Theme 3: Sunset Orange */
+        .theme-orange {
+            --primary-bg-start: #3e2a1a;
+            --primary-bg-end: #60340f;
+            --sidebar-bg: #412a1b;
+            --sidebar-item-hover-bg: #503e2c;
+            --chat-bg: #412a1b;
+            --chat-messages-bg: #2a1a0f;
+            --user-message-bg: #6b503a;
+            --ai-message-bg: #d45d00;
+            --active-item-gradient-start: #d45d00;
+            --active-item-gradient-end: #ff8c00;
+            --glow-color-light: rgba(255, 165, 0, 0.7);
+            --glow-color-dark: rgba(255, 165, 0, 0.5);
+        }
+
+        /* General Body and Layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg-start), var(--primary-bg-end));
+            color: var(--text-color-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            transition: background 0.5s ease-in-out, filter 0.3s ease-in-out; /* Smooth transition for background and filter */
+            filter: var(--brightness-filter); /* Apply brightness filter */
+        }
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease-in-out, background-color 0.5s ease-in-out;
+            transform: translateX(-100%);
+            z-index: 1000;
+        }
+        .sidebar.open {
+            transform: translateX(0);
+        }
+        @media (min-width: 768px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .content-area {
+                margin-left: 280px;
+            }
+            .sidebar-toggle {
+                display: none;
+            }
+        }
+        .sidebar-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            border-radius: 0.5rem;
+            margin: 0.5rem 1rem;
+        }
+        .sidebar-item:hover {
+            background-color: var(--sidebar-item-hover-bg);
+            transform: translateX(5px);
+        }
+        .sidebar-item.active {
+            background: linear-gradient(90deg, var(--active-item-gradient-start), var(--active-item-gradient-end));
+            box-shadow: 0 0 15px rgba(139, 0, 139, 0.6);
+            color: white;
+        }
+        .glow-text {
+            text-shadow: 0 0 8px var(--glow-color-light), 0 0 15px var(--glow-color-dark);
+        }
+        .chat-container, .developer-info-container, .settings-container {
+            background-color: var(--chat-bg);
+            border-radius: 1rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.5s ease-in-out;
+            flex-grow: 1; /* Allow these to grow within main */
+            max-width: 100%; /* Ensure it doesn't overflow */
+            overflow-y: auto; /* Allow internal scrolling if content is too long */
+        }
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background-color: var(--chat-messages-bg);
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            transition: background-color 0.5s ease-in-out;
+        }
+        .user-message {
+            background-color: var(--user-message-bg);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.5rem;
+            align-self: flex-end;
+            max-width: 80%;
+            transition: background-color 0.5s ease-in-out;
+        }
+        .ai-message {
+            background-color: var(--ai-message-bg);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.5rem;
+            align-self: flex-start;
+            max-width: 80%;
+            transition: background-color 0.5s ease-in-out;
+        }
+        .chat-input-area {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-input {
+            flex-grow: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--user-message-bg);
+            background-color: var(--chat-messages-bg);
+            color: var(--text-color-primary);
+            outline: none;
+            transition: background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out;
+        }
+        .chat-input:focus {
+            border-color: var(--active-item-gradient-end);
+            box-shadow: 0 0 0 3px rgba(139, 0, 139, 0.4);
+        }
+        .send-button {
+            background: linear-gradient(45deg, var(--active-item-gradient-start), var(--active-item-gradient-end));
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background 0.5s ease-in-out;
+        }
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 0, 139, 0.6);
+        }
+
+        /* Welcome Screen Animation */
+        .animate-fade-in {
+            animation: fadeIn 1.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Welcome Text Special Animation */
+        .welcome-text-special {
+            transition: transform 0.3s ease-in-out, text-shadow 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .welcome-text-special:active {
+            transform: scale(0.95);
+            text-shadow: 0 0 5px var(--glow-color-light), 0 0 10px var(--glow-color-dark);
+        }
+        .welcome-text-pulse {
+            animation: pulse 1.5s infinite alternate;
+        }
+        @keyframes pulse {
+            from { transform: scale(1); text-shadow: 0 0 8px var(--glow-color-light), 0 0 15px var(--glow-color-dark); }
+            to { transform: scale(1.02); text-shadow: 0 0 12px var(--glow-color-light), 0 0 20px var(--glow-color-dark); }
+        }
+
+        /* Feature Blocks Styling */
+        .feature-block {
+            background-color: rgba(27, 42, 65, 0.8); /* Slightly transparent dark blue */
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.5s ease-in-out;
+            border: 1px solid rgba(139, 0, 139, 0.3); /* Subtle border */
+        }
+        .feature-block:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+        }
+        .feature-block h3 {
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 700; /* font-bold */
+            margin-bottom: 1rem;
+            text-align: center;
+            background: linear-gradient(45deg, #ff6b6b, #ffa500); /* Red-Orange gradient */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        .feature-block p {
+            font-size: 1.125rem; /* text-lg */
+            line-height: 1.75; /* leading-relaxed */
+            text-align: justify;
+            color: var(--text-color-secondary); /* Lighter grey for descriptions */
+            transition: color 0.5s ease-in-out;
+        }
+
+        /* Unique styles for each feature block */
+        #coding-master-feature { background: linear-gradient(135deg, #2a006a, #4a008a); font-family: 'Roboto Mono', monospace; }
+        #coding-master-feature h3 { background: linear-gradient(45deg, #00ffff, #00aaff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+
+        #app-maker-feature { background: linear-gradient(135deg, #004d40, #00897b); font-family: 'Montserrat', sans-serif; }
+        #app-maker-feature h3 { background: linear-gradient(45deg, #aaff00, #00ffaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(0, 255, 170, 0.5); }
+
+        #doubt-clear-feature { background: linear-gradient(135deg, #42006a, #6a008a); font-family: 'Inter', sans-serif; }
+        #doubt-clear-feature h3 { background: linear-gradient(45deg, #ff00ff, #ff80ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(255, 0, 255, 0.5); }
+
+        #question-maker-feature { background: linear-gradient(135deg, #6a0000, #8a0000); font-family: 'Montserrat', sans-serif; }
+        #question-maker-feature h3 { background: linear-gradient(45deg, #ffcc00, #ff6600); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(255, 102, 0, 0.5); }
+
+        #web-maker-feature { background: linear-gradient(135deg, #003366, #0066cc); font-family: 'Roboto Mono', monospace; }
+        #web-maker-feature h3 { background: linear-gradient(45deg, #66ccff, #3399ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(51, 153, 255, 0.5); }
+
+        #reading-tips-feature { background: linear-gradient(135deg, #5c005c, #800080); font-family: 'Inter', sans-serif; }
+        #reading-tips-feature h3 { background: linear-gradient(45deg, #ff99ff, #cc66cc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(204, 102, 204, 0.5); }
+
+        #notes-maker-feature { background: linear-gradient(135deg, #4d4d00, #808000); font-family: 'Montserrat', sans-serif; }
+        #notes-maker-feature h3 { background: linear-gradient(45deg, #ffff00, #cccc00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(204, 204, 0, 0.5); }
+
+        #content-creator-feature { background: linear-gradient(135deg, #6a0033, #8a0044); font-family: 'Inter', sans-serif; }
+        #content-creator-feature h3 { background: linear-gradient(45deg, #ff99cc, #ff6699); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(255, 102, 153, 0.5); }
+
+        #image-generator-feature { background: linear-gradient(135deg, #005c5c, #008080); font-family: 'Roboto Mono', monospace; }
+        #image-generator-feature h3 { background: linear-gradient(45deg, #00ffcc, #00ccff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(0, 204, 255, 0.5); }
+
+        #data-analyzer-feature { background: linear-gradient(135deg, #330066, #6600cc); font-family: 'Montserrat', sans-serif; }
+        #data-analyzer-feature h3 { background: linear-gradient(45deg, #cc99ff, #9933ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(153, 51, 255, 0.5); }
+
+        /* New AI Tools */
+        #brainstorming-assistant-feature { background: linear-gradient(135deg, #4a2a00, #8a4a00); font-family: 'Inter', sans-serif; }
+        #brainstorming-assistant-feature h3 { background: linear-gradient(45deg, #ffdd33, #ffaa00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(255, 170, 0, 0.5); }
+
+        #career-guide-feature { background: linear-gradient(135deg, #004a2a, #008a4a); font-family: 'Montserrat', sans-serif; }
+        #career-guide-feature h3 { background: linear-gradient(45deg, #33ffdd, #00ffaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(0, 255, 170, 0.5); }
+
+        #language-translator-feature { background: linear-gradient(135deg, #2a004a, #4a008a); font-family: 'Roboto Mono', monospace; }
+        #language-translator-feature h3 { background: linear-gradient(45deg, #cc99ff, #9933ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(153, 51, 255, 0.5); }
+
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 767px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                padding-top: 4rem; /* Space for header */
+            }
+            .content-area {
+                /* Adjusted padding to ensure content is not cut off */
+                padding-top: 5rem; /* More space for fixed header */
+                padding-bottom: 2rem; /* Ensure bottom content is visible */
+                margin-left: 0; /* No margin on mobile */
+            }
+            .header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1001;
+                background-color: var(--primary-bg-start); /* Match body background */
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                transition: background-color 0.5s ease-in-out;
+            }
+        }
+
+        /* Desktop Mode Styles */
+        body.desktop-mode {
+            /* Force desktop layout regardless of screen size */
+            display: flex;
+            flex-direction: row; /* Sidebar and main content side-by-side */
+        }
+        body.desktop-mode .sidebar {
+            transform: translateX(0) !important; /* Always show sidebar */
+            position: relative; /* Not fixed */
+            flex-shrink: 0;
+            height: auto; /* Let content dictate height */
+        }
+        body.desktop-mode .content-area {
+            margin-left: 280px !important; /* Always make space for sidebar */
+            padding-top: 2rem !important; /* Reset padding for desktop */
+            padding-bottom: 2rem !important;
+        }
+        body.desktop-mode .header {
+            display: none !important; /* Hide mobile header in desktop mode */
+        }
+        body.desktop-mode .sidebar-toggle {
+            display: none !important; /* Hide toggle button */
+        }
+    </style>
+</head>
+<body class="flex theme-blue">
+    <!-- Header for mobile view -->
+    <header class="header fixed w-full md:hidden flex items-center justify-between p-4 bg-gradient-to-r from-[var(--primary-bg-start)] to-[var(--primary-bg-end)] text-white shadow-lg">
+        <button id="sidebarToggleMobile" class="text-2xl focus:outline-none">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="text-2xl font-bold glow-text">Master AI</h1>
+        <button id="languageToggleMobile" class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
+            <span class="current-lang">EN</span>
+        </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar fixed md:relative h-screen flex-shrink-0 p-4 overflow-y-auto">
+        <div class="flex flex-col items-center py-6 border-b border-gray-700 mb-6">
+            <h1 class="text-3xl font-extrabold mb-2 glow-text">Master AI</h1>
+            <p class="text-sm text-gray-400" data-en="Your Ultimate AI Companion" data-hi="आपका परम एआई साथी">आपका परम एआई साथी</p>
+            <button id="languageToggleDesktop" class="mt-4 bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105">
+                <span class="current-lang">EN</span>
+            </button>
+        </div>
+
+        <nav>
+            <ul id="sidebar-menu">
+                <li class="sidebar-item active" data-ai="welcome">
+                    <i class="fas fa-home text-xl"></i>
+                    <span data-en="Home" data-hi="होम">होम</span>
+                </li>
+                <li class="sidebar-item" data-ai="coding-master">
+                    <i class="fas fa-code text-xl"></i>
+                    <span data-en="Coding Master" data-hi="कोडिंग मास्टर">कोडिंग मास्टर</span>
+                </li>
+                <li class="sidebar-item" data-ai="app-maker">
+                    <i class="fas fa-mobile-alt text-xl"></i>
+                    <span data-en="App Maker" data-hi="ऐप मेकर">ऐप मेकर</span>
+                </li>
+                <li class="sidebar-item" data-ai="doubt-clear">
+                    <i class="fas fa-question-circle text-xl"></i>
+                    <span data-en="Doubt Clear" data-hi="डाउट क्लियर">डाउट क्लियर</span>
+                </li>
+                <li class="sidebar-item" data-ai="question-maker">
+                    <i class="fas fa-pencil-alt text-xl"></i>
+                    <span data-en="Question Maker" data-hi="प्रश्न मेकर">प्रश्न मेकर</span>
+                </li>
+                <li class="sidebar-item" data-ai="web-maker">
+                    <i class="fas fa-globe text-xl"></i>
+                    <span data-en="Web Maker" data-hi="वेब मेकर">वेब मेकर</span>
+                </li>
+                <li class="sidebar-item" data-ai="reading-tips">
+                    <i class="fas fa-book-reader text-xl"></i>
+                    <span data-en="Reading Tips & Tricks" data-hi="पढ़ने के टिप्स और ट्रिक्स">पढ़ने के टिप्स और ट्रिक्स</span>
+                </li>
+                <li class="sidebar-item" data-ai="notes-maker">
+                    <i class="fas fa-clipboard text-xl"></i>
+                    <span data-en="Notes Maker" data-hi="नोट्स मेकर">नोट्स मेकर</span>
+                </li>
+                <li class="sidebar-item" data-ai="content-creator">
+                    <i class="fas fa-pen-nib text-xl"></i>
+                    <span data-en="Content Creator" data-hi="कंटेंट क्रिएटर">कंटेंट क्रिएटर</span>
+                </li>
+                <li class="sidebar-item" data-ai="image-generator">
+                    <i class="fas fa-image text-xl"></i>
+                    <span data-en="Image Generator" data-hi="इमेज जनरेटर">इमेज जनरेटर</span>
+                </li>
+                <li class="sidebar-item" data-ai="data-analyzer">
+                    <i class="fas fa-chart-bar text-xl"></i>
+                    <span data-en="Data Analyzer" data-hi="डेटा एनालाइजर">डेटा एनालाइजर</span>
+                </li>
+                <!-- New AI Tools -->
+                <li class="sidebar-item" data-ai="brainstorming-assistant">
+                    <i class="fas fa-lightbulb text-xl"></i>
+                    <span data-en="Brainstorming Assistant" data-hi="विचार-मंथन सहायक">विचार-मंथन सहायक</span>
+                </li>
+                <li class="sidebar-item" data-ai="career-guide">
+                    <i class="fas fa-user-tie text-xl"></i>
+                    <span data-en="Career Guide" data-hi="करियर गाइड">करियर गाइड</span>
+                </li>
+                <li class="sidebar-item" data-ai="language-translator">
+                    <i class="fas fa-language text-xl"></i>
+                    <span data-en="Language Translator" data-hi="भाषा अनुवादक">भाषा अनुवादक</span>
+                </li>
+                <li class="sidebar-item" data-ai="about-developer">
+                    <i class="fas fa-info-circle text-xl"></i>
+                    <span data-en="About Developer" data-hi="डेवलपर के बारे में">डेवलपर के बारे में</span>
+                </li>
+                <li class="sidebar-item" data-ai="settings">
+                    <i class="fas fa-cog text-xl"></i>
+                    <span data-en="Settings" data-hi="सेटिंग्स">सेटिंग्स</span>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content-area flex-grow p-6 md:p-8 flex flex-col items-center overflow-y-auto">
+        <div id="welcome-screen" class="text-center transition-opacity duration-500 w-full max-w-4xl animate-fade-in">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-8 glow-text welcome-text-special welcome-text-pulse" data-en="Welcome to Master AI" data-hi="मास्टर एआई में आपका स्वागत है">मास्टर एआई में आपका स्वागत है</h2>
+            <p class="text-lg md:text-xl text-gray-300 mb-12" data-en="Explore the powerful AI tools below or select one from the sidebar to start chatting." data-hi="नीचे दिए गए शक्तिशाली एआई टूल का अन्वेषण करें या चैटिंग शुरू करने के लिए साइडबार से एक का चयन करें।">एक्सप्लोर करें नीचे दिए गए शक्तिशाली एआई टूल का अन्वेषण करें या चैटिंग शुरू करने के लिए साइडबार से एक का चयन करें।</p>
+
+            <!-- AI Tool Features Section -->
+            <section id="ai-features" class="space-y-12">
+                <!-- Coding Master Feature -->
+                <div id="coding-master-feature" class="feature-block">
+                    <h3 data-en="Coding Master" data-hi="कोडिंग मास्टर">कोडिंग मास्टर</h3>
+                    <p data-en="Unlock your coding potential with Coding Master! This AI is designed to be your personal programming tutor and assistant. Whether you're a beginner learning the basics or an experienced developer tackling complex algorithms, Coding Master can provide instant code explanations, debug errors, suggest optimal solutions, and even generate code snippets in various languages. It's an invaluable resource for anyone looking to improve their coding skills, understand new concepts, or streamline their development workflow. Get ready to write cleaner, more efficient code with intelligent guidance." data-hi="कोडिंग मास्टर के साथ अपनी कोडिंग क्षमता को अनलॉक करें! यह एआई आपका व्यक्तिगत प्रोग्रामिंग ट्यूटर और सहायक बनने के लिए डिज़ाइन किया गया है। चाहे आप मूल बातें सीखने वाले शुरुआती हों या जटिल एल्गोरिदम से निपटने वाले अनुभवी डेवलपर, कोडिंग मास्टर त्वरित कोड स्पष्टीकरण प्रदान कर सकता है, त्रुटियों को डीबग कर सकता है, इष्टतम समाधान सुझा सकता है, और यहां तक कि विभिन्न भाषाओं में कोड स्निपेट भी उत्पन्न कर सकता है। यह उन सभी के लिए एक अमूल्य संसाधन है जो अपने कोडिंग कौशल में सुधार करना चाहते हैं, नई अवधारणाओं को समझना चाहते हैं, या अपनी विकास कार्यप्रणाली को सुव्यवस्थित करना चाहते हैं। बुद्धिमान मार्गदर्शन के साथ स्वच्छ, अधिक कुशल कोड लिखने के लिए तैयार हो जाइए।">
+                        कोडिंग मास्टर के साथ अपनी कोडिंग क्षमता को अनलॉक करें! यह एआई आपका व्यक्तिगत प्रोग्रामिंग ट्यूटर और सहायक बनने के लिए डिज़ाइन किया गया है। चाहे आप मूल बातें सीखने वाले शुरुआती हों या जटिल एल्गोरिदम से निपटने वाले अनुभवी डेवलपर, कोडिंग मास्टर त्वरित कोड स्पष्टीकरण प्रदान कर सकता है, त्रुटियों को डीबग कर सकता है, इष्टतम समाधान सुझा सकता है, और यहां तक कि विभिन्न भाषाओं में कोड स्निपेट भी उत्पन्न कर सकता है। यह उन सभी के लिए एक अमूल्य संसाधन है जो अपने कोडिंग कौशल में सुधार करना चाहते हैं, नई अवधारणाओं को समझना चाहते हैं, या अपनी विकास कार्यप्रणाली को सुव्यवस्थित करना चाहते हैं। बुद्धिमान मार्गदर्शन के साथ स्वच्छ, अधिक कुशल कोड लिखने के लिए तैयार हो जाइए।
+                    </p>
+                </div>
+
+                <!-- App Maker Feature -->
+                <div id="app-maker-feature" class="feature-block">
+                    <h3 data-en="App Maker" data-hi="ऐप मेकर">ऐप मेकर</h3>
+                    <p data-en="Dreaming of your own mobile app? App Maker AI turns your ideas into reality! This powerful tool guides you through the entire app development process, from conceptualization and UI/UX design to generating functional code. Describe your app's purpose, features, and target audience, and App Maker will help you build prototypes, suggest design elements, and even provide boilerplate code for different platforms. It simplifies complex development tasks, making app creation accessible to everyone, regardless of their technical background. Bring your innovative app ideas to life with ease." data-hi="अपने खुद के मोबाइल ऐप का सपना देख रहे हैं? ऐप मेकर एआई आपके विचारों को वास्तविकता में बदल देता है! यह शक्तिशाली टूल आपको ऐप विकास की पूरी प्रक्रिया में मार्गदर्शन करता है, अवधारणाकरण और यूआई/यूएक्स डिज़ाइन से लेकर कार्यात्मक कोड उत्पन्न करने तक। अपने ऐप के उद्देश्य, सुविधाओं और लक्षित दर्शकों का वर्णन करें, और ऐप मेकर आपको प्रोटोटाइप बनाने, डिज़ाइन तत्वों का सुझाव देने और विभिन्न प्लेटफार्मों के लिए बॉयलरप्लेट कोड प्रदान करने में भी मदद करेगा। यह जटिल विकास कार्यों को सरल बनाता है, जिससे ऐप बनाना सभी के लिए सुलभ हो जाता है, चाहे उनकी तकनीकी पृष्ठभूमि कुछ भी हो। अपने नवीन ऐप विचारों को आसानी से जीवन में लाएं।">
+                        अपने खुद के मोबाइल ऐप का सपना देख रहे हैं? ऐप मेकर एआई आपके विचारों को वास्तविकता में बदल देता है! यह शक्तिशाली टूल आपको ऐप विकास की पूरी प्रक्रिया में मार्गदर्शन करता है, अवधारणाकरण और यूआई/यूएक्स डिज़ाइन से लेकर कार्यात्मक कोड उत्पन्न करने तक। अपने ऐप के उद्देश्य, सुविधाओं और लक्षित दर्शकों का वर्णन करें, और ऐप मेकर आपको प्रोटोटाइप बनाने, डिज़ाइन तत्वों का सुझाव देने और विभिन्न प्लेटफार्मों के लिए बॉयलरप्लेट कोड प्रदान करने में भी मदद करेगा। यह जटिल विकास कार्यों को सरल बनाता है, जिससे ऐप बनाना सभी के लिए सुलभ हो जाता है, चाहे उनकी तकनीकी पृष्ठभूमि कुछ भी हो। अपने नवीन ऐप विचारों को आसानी से जीवन में लाएं।
+                    </p>
+                </div>
+
+                <!-- Doubt Clear Feature -->
+                <div id="doubt-clear-feature" class="feature-block">
+                    <h3 data-en="Doubt Clear" data-hi="डाउट क्लियर">डाउट क्लियर</h3>
+                    <p data-en="Stuck on a problem? Doubt Clear AI is here to provide instant, comprehensive explanations for any query across various subjects. Whether it\'s a complex mathematical equation, a scientific concept, a historical event, or a philosophical dilemma, simply ask your question. This AI leverages vast knowledge bases to break down difficult topics into easily understandable segments, offering step-by-step solutions, relevant examples, and clarifying analogies. It’s like having an expert tutor available 24/7, ready to illuminate any area of confusion and help you grasp concepts thoroughly. Never let a doubt hold you back again." data-hi="किसी समस्या पर अटके हुए हैं? डाउट क्लियर एआई विभिन्न विषयों पर किसी भी प्रश्न के लिए तत्काल, व्यापक स्पष्टीकरण प्रदान करने के लिए यहां है। चाहे वह एक जटिल गणितीय समीकरण हो, एक वैज्ञानिक अवधारणा हो, एक ऐतिहासिक घटना हो, या एक दार्शनिक दुविधा हो, बस अपना प्रश्न पूछें। यह एआई कठिन विषयों को आसानी से समझने योग्य खंडों में तोड़ने के लिए विशाल ज्ञान आधारों का लाभ उठाता है, चरण-दर-चरण समाधान, प्रासंगिक उदाहरण और स्पष्टीकरण उपमाएं प्रदान करता है। यह 24/7 उपलब्ध एक विशेषज्ञ ट्यूटर होने जैसा है, जो भ्रम के किसी भी क्षेत्र को रोशन करने और अवधारणाओं को अच्छी तरह से समझने में आपकी मदद करने के लिए तैयार है। कभी भी किसी संदेह को आपको फिर से पीछे न हटने दें।">
+                        किसी समस्या पर अटके हुए हैं? डाउट क्लियर एआई विभिन्न विषयों पर किसी भी प्रश्न के लिए तत्काल, व्यापक स्पष्टीकरण प्रदान करने के लिए यहां है। चाहे वह एक जटिल गणितीय समीकरण हो, एक वैज्ञानिक अवधारणा हो, एक ऐतिहासिक घटना हो, या एक दार्शनिक दुविधा हो, बस अपना प्रश्न पूछें। यह एआई कठिन विषयों को आसानी से समझने योग्य खंडों में तोड़ने के लिए विशाल ज्ञान आधारों का लाभ उठाता है, चरण-दर-चरण समाधान, प्रासंगिक उदाहरण और स्पष्टीकरण उपमाएं प्रदान करता है। यह 24/7 उपलब्ध एक विशेषज्ञ ट्यूटर होने जैसा है, जो भ्रम के किसी भी क्षेत्र को रोशन करने और अवधारणाओं को अच्छी तरह से समझने में आपकी मदद करने के लिए तैयार है। कभी भी किसी संदेह को आपको फिर से पीछे न हटने दें।
+                    </p>
+                </div>
+
+                <!-- Question Maker Feature -->
+                <div id="question-maker-feature" class="feature-block">
+                    <h3 data-en="Question Maker" data-hi="प्रश्न मेकर">प्रश्न मेकर</h3>
+                    <p data-en="Need to generate questions for quizzes, exams, or study guides? Question Maker AI is your perfect companion! This intelligent tool can create a wide range of questions—multiple-choice, true/false, short answer, essay prompts—based on any provided text or topic. Simply input your content or describe the subject matter, and the AI will analyze it to formulate relevant and challenging questions. It's ideal for educators, students preparing for tests, or anyone looking to deepen their understanding by actively engaging with material through self-assessment. Save time and create effective learning tools effortlessly." data-hi="क्विज़, परीक्षा या अध्ययन गाइड के लिए प्रश्न बनाने की आवश्यकता है? क्वेश्चन मेकर एआई आपका आदर्श साथी है! यह बुद्धिमान टूल किसी भी प्रदान किए गए पाठ या विषय के आधार पर विभिन्न प्रकार के प्रश्न—बहुविकल्पीय, सही/गलत, लघु उत्तर, निबंध संकेत—बना सकता है। बस अपनी सामग्री इनपुट करें या विषय वस्तु का वर्णन करें, और एआई प्रासंगिक और चुनौतीपूर्ण प्रश्न तैयार करने के लिए इसका विश्लेषण करेगा। यह शिक्षकों, परीक्षाओं की तैयारी करने वाले छात्रों, या आत्म-मूल्यांकन के माध्यम से सामग्री के साथ सक्रिय रूप से जुड़कर अपनी समझ को गहरा करने वाले किसी भी व्यक्ति के लिए आदर्श है। समय बचाएं और आसानी से प्रभावी शिक्षण उपकरण बनाएं।">
+                        क्विज़, परीक्षा या अध्ययन गाइड के लिए प्रश्न बनाने की आवश्यकता है? क्वेश्चन मेकर एआई आपका आदर्श साथी है! यह बुद्धिमान टूल किसी भी प्रदान किए गए पाठ या विषय के आधार पर विभिन्न प्रकार के प्रश्न—बहुविकल्पीय, सही/गलत, लघु उत्तर, निबंध संकेत—बना सकता है। बस अपनी सामग्री इनपुट करें या विषय वस्तु का वर्णन करें, और एआई प्रासंगिक और चुनौतीपूर्ण प्रश्न तैयार करने के लिए इसका विश्लेषण करेगा। यह शिक्षकों, परीक्षाओं की तैयारी करने वाले छात्रों, या आत्म-मूल्यांकन के माध्यम से सामग्री के साथ सक्रिय रूप से जुड़कर अपनी समझ को गहरा करने वाले किसी भी व्यक्ति के लिए आदर्श है। समय बचाएं और आसानी से प्रभावी शिक्षण उपकरण बनाएं।
+                    </p>
+                </div>
+
+                <!-- Web Maker Feature -->
+                <div id="web-maker-feature" class="feature-block">
+                    <h3 data-en="Web Maker" data-hi="वेब मेकर">वेब मेकर</h3>
+                    <p data-en="Build stunning websites with ease using Web Maker AI! Whether you need a personal portfolio, a business landing page, or a complex e-commerce site, this AI streamlines the web development process. Describe your vision, desired features, and aesthetic preferences, and Web Maker will generate HTML, CSS, and JavaScript code, suggest design templates, and even help with content creation. It's perfect for aspiring web developers, small business owners, or anyone who wants a professional online presence without extensive coding knowledge. Create beautiful, responsive websites in minutes, not months." data-hi="वेब मेकर एआई का उपयोग करके आसानी से शानदार वेबसाइटें बनाएं! चाहे आपको एक व्यक्तिगत पोर्टफोलियो, एक व्यावसायिक लैंडिंग पेज, या एक जटिल ई-कॉमर्स साइट की आवश्यकता हो, यह एआई वेब विकास प्रक्रिया को सुव्यवस्थित करता है। अपनी दृष्टि, वांछित सुविधाओं और सौंदर्य संबंधी प्राथमिकताओं का वर्णन करें, और वेब मेकर HTML, CSS और जावास्क्रिप्ट कोड उत्पन्न करेगा, डिज़ाइन टेम्प्लेट सुझाएगा, और यहां तक कि सामग्री निर्माण में भी मदद करेगा। यह महत्वाकांक्षी वेब डेवलपर्स, छोटे व्यवसाय मालिकों, या व्यापक कोडिंग ज्ञान के बिना एक पेशेवर ऑनलाइन उपस्थिति चाहने वाले किसी भी व्यक्ति के लिए एकदम सही है। महीनों नहीं, मिनटों में सुंदर, उत्तरदायी वेबसाइटें बनाएं।">
+                        वेब मेकर एआई का उपयोग करके आसानी से शानदार वेबसाइटें बनाएं! चाहे आपको एक व्यक्तिगत पोर्टफोलियो, एक व्यावसायिक लैंडिंग पेज, या एक जटिल ई-कॉमर्स साइट की आवश्यकता हो, यह एआई वेब विकास प्रक्रिया को सुव्यवस्थित करता है। अपनी दृष्टि, वांछित सुविधाओं और सौंदर्य संबंधी प्राथमिकताओं का वर्णन करें, और वेब मेकर HTML, CSS और जावास्क्रिप्ट कोड उत्पन्न करेगा, डिज़ाइन टेम्प्लेट सुझाएगा, और यहां तक कि सामग्री निर्माण में भी मदद करेगा। यह महत्वाकांक्षी वेब डेवलपर्स, छोटे व्यवसाय मालिकों, या व्यापक कोडिंग ज्ञान के बिना एक पेशेवर ऑनलाइन उपस्थिति चाहने वाले किसी भी व्यक्ति के लिए एकदम सही है। महीनों नहीं, मिनटों में सुंदर, उत्तरदायी वेबसाइटें बनाएं।
+                    </p>
+                </div>
+
+                <!-- Reading Tips & Tricks Feature -->
+                <div id="reading-tips-feature" class="feature-block">
+                    <h3 data-en="Reading Tips & Tricks" data-hi="पढ़ने के टिप्स और ट्रिक्स">पढ़ने के टिप्स और ट्रिक्स</h3>
+                    <p data-en="Enhance your reading comprehension and speed with Reading Tips & Tricks AI! This tool offers personalized strategies to help you become a more effective reader. It can analyze your reading habits, suggest techniques like speed reading, active recall, and SQ3R, and provide exercises to improve focus and retention. Whether you're studying for exams, trying to get through dense academic papers, or simply want to enjoy books more deeply, this AI provides actionable advice and insights tailored to your learning style. Transform your reading experience and absorb information more efficiently." data-hi="रीडिंग टिप्स और ट्रिक्स एआई के साथ अपनी पढ़ने की समझ और गति बढ़ाएँ! यह टूल आपको अधिक प्रभावी पाठक बनने में मदद करने के लिए व्यक्तिगत रणनीतियाँ प्रदान करता है। यह आपकी पढ़ने की आदतों का विश्लेषण कर सकता है, स्पीड रीडिंग, सक्रिय स्मरण और SQ3R जैसी तकनीकों का सुझाव दे सकता है, और ध्यान और प्रतिधारण में सुधार के लिए अभ्यास प्रदान कर सकता है। चाहे आप परीक्षाओं के लिए अध्ययन कर रहे हों, घने अकादमिक पत्रों को पढ़ने की कोशिश कर रहे हों, या बस किताबों का अधिक गहराई से आनंद लेना चाहते हों, यह एआई आपकी सीखने की शैली के अनुरूप व्यावहारिक सलाह और अंतर्दृष्टि प्रदान करता है। अपने पढ़ने के अनुभव को बदलें और जानकारी को अधिक कुशलता से अवशोषित करें।">
+                        रीडिंग टिप्स और ट्रिक्स एआई के साथ अपनी पढ़ने की समझ और गति बढ़ाएँ! यह टूल आपको अधिक प्रभावी पाठक बनने में मदद करने के लिए व्यक्तिगत रणनीतियाँ प्रदान करता है। यह आपकी पढ़ने की आदतों का विश्लेषण कर सकता है, स्पीड रीडिंग, सक्रिय स्मरण और SQ3R जैसी तकनीकों का सुझाव दे सकता है, और ध्यान और प्रतिधारण में सुधार के लिए अभ्यास प्रदान कर सकता है। चाहे आप परीक्षाओं के लिए अध्ययन कर रहे हों, घने अकादमिक पत्रों को पढ़ने की कोशिश कर रहे हों, या बस किताबों का अधिक गहराई से आनंद लेना चाहते हों, यह एआई आपकी सीखने की शैली के अनुरूप व्यावहारिक सलाह और अंतर्दृष्टि प्रदान करता है। अपने पढ़ने के अनुभव को बदलें और जानकारी को अधिक कुशलता से अवशोषित करें।
+                    </p>
+                </div>
+
+                <!-- Notes Maker Feature -->
+                <div id="notes-maker-feature" class="feature-block">
+                    <h3 data-en="Notes Maker" data-hi="नोट्स मेकर">नोट्स मेकर</h3>
+                    <p data-en="Organize your thoughts and information effortlessly with Notes Maker AI! This intelligent assistant helps you create concise, structured, and effective notes from any source—lectures, meetings, articles, or brainstorming sessions. Simply input your raw text or audio, and the AI can summarize key points, extract important terms, format notes into bullet points or mind maps, and even suggest connections between ideas. It's an indispensable tool for students, professionals, and researchers who want to improve their information retention and productivity. Never miss an important detail again with smart note-taking." data-hi="नोट्स मेकर एआई के साथ अपने विचारों और जानकारी को सहजता से व्यवस्थित करें! यह बुद्धिमान सहायक आपको किसी भी स्रोत—व्याख्यान, बैठकें, लेख, या विचार-मंथन सत्र—से संक्षिप्त, संरचित और प्रभावी नोट्स बनाने में मदद करता है। बस अपना कच्चा पाठ या ऑडियो इनपुट करें, और एआई मुख्य बिंदुओं को सारांशित कर सकता है, महत्वपूर्ण शब्दों को निकाल सकता है, नोट्स को बुलेट पॉइंट या माइंड मैप में प्रारूपित कर सकता है, और यहां तक कि विचारों के बीच संबंध भी सुझा सकता है। यह छात्रों, पेशेवरों और शोधकर्ताओं के लिए एक अनिवार्य उपकरण है जो अपनी जानकारी प्रतिधारण और उत्पादकता में सुधार करना चाहते हैं। स्मार्ट नोट-टेकिंग के साथ फिर कभी कोई महत्वपूर्ण विवरण न चूकें।">
+                        नोट्स मेकर एआई के साथ अपने विचारों और जानकारी को सहजता से व्यवस्थित करें! यह बुद्धिमान सहायक आपको किसी भी स्रोत—व्याख्यान, बैठकें, लेख, या विचार-मंथन सत्र—से संक्षिप्त, संरचित और प्रभावी नोट्स बनाने में मदद करता है। बस अपना कच्चा पाठ या ऑडियो इनपुट करें, और एआई मुख्य बिंदुओं को सारांशित कर सकता है, महत्वपूर्ण शब्दों को निकाल सकता है, नोट्स को बुलेट पॉइंट या माइंड मैप में प्रारूपित कर सकता है, और यहां तक कि विचारों के बीच संबंध भी सुझा सकता है। यह छात्रों, पेशेवरों और शोधकर्ताओं के लिए एक अनिवार्य उपकरण है जो अपनी जानकारी प्रतिधारण और उत्पादकता में सुधार करना चाहते हैं। स्मार्ट नोट-टेकिंग के साथ फिर कभी कोई महत्वपूर्ण विवरण न चूकें।
+                    </p>
+                </div>
+
+                <!-- Content Creator Feature (New) -->
+                <div id="content-creator-feature" class="feature-block">
+                    <h3 data-en="Content Creator" data-hi="कंटेंट क्रिएटर">कंटेंट क्रिएटर</h3>
+                    <p data-en="Struggling with writer's block? Content Creator AI is your ultimate muse! This tool generates engaging and original content for blogs, social media posts, marketing copy, articles, and more. Provide a topic, keywords, or a brief outline, and the AI will craft compelling narratives, catchy headlines, and persuasive calls to action. It adapts to various tones and styles, ensuring your content resonates with your target audience. Perfect for marketers, bloggers, and anyone needing high-quality written material quickly and efficiently. Unleash your creativity with AI-powered content generation." data-hi="लेखक के ब्लॉक से जूझ रहे हैं? कंटेंट क्रिएटर एआई आपकी अंतिम प्रेरणा है! यह टूल ब्लॉग, सोशल मीडिया पोस्ट, मार्केटिंग कॉपी, लेख और बहुत कुछ के लिए आकर्षक और मूल सामग्री उत्पन्न करता है। एक विषय, कीवर्ड, या एक संक्षिप्त रूपरेखा प्रदान करें, और एआई आकर्षक कथाएं, आकर्षक शीर्षक और प्रेरक कॉल टू एक्शन तैयार करेगा। यह विभिन्न स्वरों और शैलियों के अनुकूल होता है, यह सुनिश्चित करते हुए कि आपकी सामग्री आपके लक्षित दर्शकों के साथ प्रतिध्वनित होती है। विपणक, ब्लॉगर और उच्च-गुणवत्ता वाली लिखित सामग्री की त्वरित और कुशलता से आवश्यकता वाले किसी भी व्यक्ति के लिए बिल्कुल सही। एआई-संचालित सामग्री निर्माण के साथ अपनी रचनात्मकता को उजागर करें।">
+                        लेखक के ब्लॉक से जूझ रहे हैं? कंटेंट क्रिएटर एआई आपकी अंतिम प्रेरणा है! यह टूल ब्लॉग, सोशल मीडिया पोस्ट, मार्केटिंग कॉपी, लेख और बहुत कुछ के लिए आकर्षक और मूल सामग्री उत्पन्न करता है। एक विषय, कीवर्ड, या एक संक्षिप्त रूपरेखा प्रदान करें, और एआई आकर्षक कथाएं, आकर्षक शीर्षक और प्रेरक कॉल टू एक्शन तैयार करेगा। यह विभिन्न स्वरों और शैलियों के अनुकूल होता है, यह सुनिश्चित करते हुए कि आपकी सामग्री आपके लक्षित दर्शकों के साथ प्रतिध्वनित होती है। विपणक, ब्लॉगर और उच्च-गुणवत्ता वाली लिखित सामग्री की त्वरित और कुशलता से आवश्यकता वाले किसी भी व्यक्ति के लिए बिल्कुल सही। एआई-संचालित सामग्री निर्माण के साथ अपनी रचनात्मकता को उजागर करें।
+                    </p>
+                </div>
+
+                <!-- Image Generator Feature (New) -->
+                <div id="image-generator-feature" class="feature-block">
+                    <h3 data-en="Image Generator" data-hi="इमेज जनरेटर">इमेज जनरेटर</h3>
+                    <p data-en="Visualize your imagination with Image Generator AI! This powerful tool transforms your textual descriptions into stunning visual art. Simply describe the image you envision—a futuristic city, a whimsical creature, a serene landscape—and the AI will generate unique, high-quality images in various artistic styles. It's perfect for designers, artists, content creators, or anyone who needs custom visuals without artistic skills. From abstract concepts to photorealistic scenes, bring your wildest ideas to life with the power of generative AI. Create captivating visuals effortlessly." data-hi="इमेज जनरेटर एआई के साथ अपनी कल्पना को देखें! यह शक्तिशाली टूल आपके शाब्दिक विवरणों को शानदार दृश्य कला में बदल देता है। बस उस छवि का वर्णन करें जिसकी आप कल्पना करते हैं—एक भविष्य का शहर, एक सनकी प्राणी, एक शांत परिदृश्य—और एआई विभिन्न कलात्मक शैलियों में अद्वितीय, उच्च-गुणवत्ता वाली छवियां उत्पन्न करेगा। यह डिजाइनरों, कलाकारों, सामग्री निर्माताओं, या कलात्मक कौशल के बिना कस्टम दृश्यों की आवश्यकता वाले किसी भी व्यक्ति के लिए एकदम सही है। अमूर्त अवधारणाओं से लेकर फोटोरियलिस्टिक दृश्यों तक, जनरेटिव एआई की शक्ति के साथ अपने सबसे जंगली विचारों को जीवन में लाएं। आसानी से आकर्षक दृश्य बनाएं।">
+                        इमेज जनरेटर एआई के साथ अपनी कल्पना को देखें! यह शक्तिशाली टूल आपके शाब्दिक विवरणों को शानदार दृश्य कला में बदल देता है। बस उस छवि का वर्णन करें जिसकी आप कल्पना करते हैं—एक भविष्य का शहर, एक सनकी प्राणी, एक शांत परिदृश्य—और एआई विभिन्न कलात्मक शैलियों में अद्वितीय, उच्च-गुणवत्ता वाली छवियां उत्पन्न करेगा। यह डिजाइनरों, कलाकारों, सामग्री निर्माताओं, या कलात्मक कौशल के बिना कस्टम दृश्यों की आवश्यकता वाले किसी भी व्यक्ति के लिए एकदम सही है। अमूर्त अवधारणाओं से लेकर फोटोरियलिस्टिक दृश्यों तक, जनरेटिव एआई की शक्ति के साथ अपने सबसे जंगली विचारों को जीवन में लाएं। आसानी से आकर्षक दृश्य बनाएं।
+                    </p>
+                </div>
+
+                <!-- Data Analyzer Feature (New) -->
+                <div id="data-analyzer-feature" class="feature-block">
+                    <h3 data-en="Data Analyzer" data-hi="डेटा एनालाइजर">डेटा एनालाइजर</h3>
+                    <p data-en="Make sense of complex data with Data Analyzer AI! This intelligent tool helps you uncover insights, identify trends, and visualize information from your datasets. Upload your data, and the AI can perform statistical analysis, generate charts and graphs, and provide clear, actionable summaries. It's invaluable for business professionals, researchers, and students who need to interpret large volumes of data without extensive statistical knowledge. Transform raw numbers into meaningful intelligence and make informed decisions with the power of AI-driven data analysis." data-hi="डेटा एनालाइजर एआई के साथ जटिल डेटा को समझें! यह बुद्धिमान टूल आपको अपने डेटासेट से अंतर्दृष्टि उजागर करने, रुझानों की पहचान करने और जानकारी को देखने में मदद करता है। अपना डेटा अपलोड करें, और एआई सांख्यिकीय विश्लेषण कर सकता है, चार्ट और ग्राफ़ उत्पन्न कर सकता है, और स्पष्ट, कार्रवाई योग्य सारांश प्रदान कर सकता है। यह व्यावसायिक पेशेवरों, शोधकर्ताओं और छात्रों के लिए अमूल्य है जिन्हें व्यापक सांख्यिकीय ज्ञान के बिना बड़ी मात्रा में डेटा की व्याख्या करने की आवश्यकता है। कच्चे नंबरों को सार्थक बुद्धिमत्ता में बदलें और सूचित निर्णय लें।">
+                        डेटा एनालाइजर एआई के साथ जटिल डेटा को समझें! यह बुद्धिमान टूल आपको अपने डेटासेट से अंतर्दृष्टि उजागर करने, रुझानों की पहचान करने और जानकारी को देखने में मदद करता है। अपना डेटा अपलोड करें, और एआई सांख्यिकीय विश्लेषण कर सकता है, चार्ट और ग्राफ़ उत्पन्न कर सकता है, और स्पष्ट, कार्रवाई योग्य सारांश प्रदान कर सकता है। यह व्यावसायिक पेशेवरों, शोधकर्ताओं और छात्रों के लिए अमूल्य है जिन्हें व्यापक सांख्यिकीय ज्ञान के बिना बड़ी मात्रा में डेटा की व्याख्या करने की आवश्यकता है। कच्चे नंबरों को सार्थक बुद्धिमत्ता में बदलें और सूचित निर्णय लें।
+                    </p>
+                </div>
+
+                <!-- Brainstorming Assistant Feature (New) -->
+                <div id="brainstorming-assistant-feature" class="feature-block">
+                    <h3 data-en="Brainstorming Assistant" data-hi="विचार-मंथन सहायक">विचार-मंथन सहायक</h3>
+                    <p data-en="Unleash your creativity and generate innovative ideas with Brainstorming Assistant AI! This tool helps you overcome creative blocks and explore new perspectives on any topic. Simply input a problem, a theme, or a starting concept, and the AI will provide a diverse range of ideas, prompts, and thought-starters. It can help you organize your thoughts, identify connections, and develop concepts further, making it an indispensable partner for designers, writers, entrepreneurs, and anyone seeking fresh insights. Transform your ideation process and discover groundbreaking solutions effortlessly." data-hi="ब्रेनस्टॉर्मिंग असिस्टेंट एआई के साथ अपनी रचनात्मकता को उजागर करें और नवीन विचार उत्पन्न करें! यह टूल आपको रचनात्मक बाधाओं को दूर करने और किसी भी विषय पर नए दृष्टिकोण तलाशने में मदद करता है। बस एक समस्या, एक विषय, या एक प्रारंभिक अवधारणा इनपुट करें, और एआई विचारों, संकेतों और विचार-शुरुआत करने वालों की एक विविध श्रेणी प्रदान करेगा। यह आपको अपने विचारों को व्यवस्थित करने, कनेक्शनों की पहचान करने और अवधारणाओं को और विकसित करने में मदद कर सकता है, जिससे यह डिजाइनरों, लेखकों, उद्यमियों और नए अंतर्दृष्टि की तलाश करने वाले किसी भी व्यक्ति के लिए एक अनिवार्य भागीदार बन जाता है। अपनी विचार प्रक्रिया को बदलें और आसानी से अभूतपूर्व समाधान खोजें।">
+                        ब्रेनस्टॉर्मिंग असिस्टेंट एआई के साथ अपनी रचनात्मकता को उजागर करें और नवीन विचार उत्पन्न करें! यह टूल आपको रचनात्मक बाधाओं को दूर करने और किसी भी विषय पर नए दृष्टिकोण तलाशने में मदद करता है। बस एक समस्या, एक विषय, या एक प्रारंभिक अवधारणा इनपुट करें, और एआई विचारों, संकेतों और विचार-शुरुआत करने वालों की एक विविध श्रेणी प्रदान करेगा। यह आपको अपने विचारों को व्यवस्थित करने, कनेक्शनों की पहचान करने और अवधारणाओं को और विकसित करने में मदद कर सकता है, जिससे यह डिजाइनरों, लेखकों, उद्यमियों और नए अंतर्दृष्टि की तलाश करने वाले किसी भी व्यक्ति के लिए एक अनिवार्य भागीदार बन जाता है। अपनी विचार प्रक्रिया को बदलें और आसानी से अभूतपूर्व समाधान खोजें।
+                    </p>
+                </div>
+
+                <!-- Career Guide Feature (New) -->
+                <div id="career-guide-feature" class="feature-block">
+                    <h3 data-en="Career Guide" data-hi="करियर गाइड">करियर गाइड</h3>
+                    <p data-en="Navigate your professional journey with confidence using Career Guide AI! This intelligent assistant provides personalized career advice, helps you explore different industries, and offers insights into job market trends. Share your skills, interests, and aspirations, and the AI can suggest suitable career paths, recommend educational resources, and even assist with resume building and interview preparation. It's an invaluable tool for students planning their future, professionals seeking a career change, or anyone looking to advance in their current field. Chart your path to success with expert guidance." data-hi="करियर गाइड एआई का उपयोग करके आत्मविश्वास के साथ अपनी पेशेवर यात्रा को नेविगेट करें! यह बुद्धिमान सहायक व्यक्तिगत करियर सलाह प्रदान करता है, आपको विभिन्न उद्योगों का पता लगाने में मदद करता है, और नौकरी बाजार के रुझानों में अंतर्दृष्टि प्रदान करता है। अपने कौशल, रुचियों और आकांक्षाओं को साझा करें, और एआई उपयुक्त करियर पथ सुझा सकता है, शैक्षिक संसाधनों की सिफारिश कर सकता है, और यहां तक कि रिज्यूमे बनाने और साक्षात्कार की तैयारी में भी सहायता कर सकता है। यह छात्रों के लिए अपने भविष्य की योजना बनाने, करियर बदलने की तलाश करने वाले पेशेवरों, या अपने वर्तमान क्षेत्र में आगे बढ़ने की तलाश करने वाले किसी भी व्यक्ति के लिए एक अमूल्य उपकरण है। विशेषज्ञ मार्गदर्शन के साथ सफलता के लिए अपना मार्ग प्रशस्त करें।">
+                        करियर गाइड एआई का उपयोग करके आत्मविश्वास के साथ अपनी पेशेवर यात्रा को नेविगेट करें! यह बुद्धिमान सहायक व्यक्तिगत करियर सलाह प्रदान करता है, आपको विभिन्न उद्योगों का पता लगाने में मदद करता है, और नौकरी बाजार के रुझानों में अंतर्दृष्टि प्रदान करता है। अपने कौशल, रुचियों और आकांक्षाओं को साझा करें, और एआई उपयुक्त करियर पथ सुझा सकता है, शैक्षिक संसाधनों की सिफारिश कर सकता है, और यहां तक कि रिज्यूमे बनाने और साक्षात्कार की तैयारी में भी सहायता कर सकता है। यह छात्रों के लिए अपने भविष्य की योजना बनाने, करियर बदलने की तलाश करने वाले पेशेवरों, या अपने वर्तमान क्षेत्र में आगे बढ़ने की तलाश करने वाले किसी भी व्यक्ति के लिए एक अमूल्य उपकरण है। विशेषज्ञ मार्गदर्शन के साथ सफलता के लिए अपना मार्ग प्रशस्त करें।
+                    </p>
+                </div>
+
+                <!-- Language Translator Feature (New) -->
+                <div id="language-translator-feature" class="feature-block">
+                    <h3 data-en="Language Translator" data-hi="भाषा अनुवादक">भाषा अनुवादक</h3>
+                    <p data-en="Break down language barriers with Language Translator AI! This tool provides accurate and instant translations for text across a multitude of languages. Whether you need to understand a foreign document, communicate with someone in a different language, or simply learn new phrases, this AI ensures seamless linguistic exchange. Input your text, select the target language, and receive precise translations that maintain context and nuance. It's an essential companion for travelers, international business professionals, language learners, and anyone looking to connect across cultures. Communicate globally with ease." data-hi="भाषा अनुवादक एआई के साथ भाषा की बाधाओं को तोड़ें! यह टूल कई भाषाओं में टेक्स्ट के लिए सटीक और तत्काल अनुवाद प्रदान करता है। चाहे आपको किसी विदेशी दस्तावेज़ को समझने की आवश्यकता हो, किसी भिन्न भाषा में किसी के साथ संवाद करना हो, या बस नए वाक्यांश सीखना हो, यह एआई सहज भाषाई विनिमय सुनिश्चित करता है। अपना टेक्स्ट इनपुट करें, लक्ष्य भाषा का चयन करें, और सटीक अनुवाद प्राप्त करें जो संदर्भ और बारीकियों को बनाए रखते हैं। यह यात्रियों, अंतर्राष्ट्रीय व्यापार पेशेवरों, भाषा सीखने वालों और संस्कृतियों में जुड़ने की तलाश करने वाले किसी भी व्यक्ति के लिए एक आवश्यक साथी है। आसानी से विश्व स्तर पर संवाद करें।">
+                        भाषा अनुवादक एआई के साथ भाषा की बाधाओं को तोड़ें! यह टूल कई भाषाओं में टेक्स्ट के लिए सटीक और तत्काल अनुवाद प्रदान करता है। चाहे आपको किसी विदेशी दस्तावेज़ को समझने की आवश्यकता हो, किसी भिन्न भाषा में किसी के साथ संवाद करना हो, या बस नए वाक्यांश सीखना हो, यह एआई सहज भाषाई विनिमय सुनिश्चित करता है। अपना टेक्स्ट इनपुट करें, लक्ष्य भाषा का चयन करें, और सटीक अनुवाद प्राप्त करें जो संदर्भ और बारीकियों को बनाए रखते हैं। यह यात्रियों, अंतर्राष्ट्रीय व्यापार पेशेवरों, भाषा सीखने वालों और संस्कृतियों में जुड़ने की तलाश करने वाले किसी भी व्यक्ति के लिए एक आवश्यक साथी है। आसानी से विश्व स्तर पर संवाद करें।
+                    </p>
+                </div>
+
+            </section>
+
+            <!-- Developer Info at the bottom of Welcome Screen -->
+            <div class="mt-16 py-8 border-t border-gray-700 text-center animate-fade-in">
+                <p class="text-xl font-bold glow-text" data-en="Developed by:" data-hi="द्वारा विकसित:">द्वारा विकसित:</p>
+                <p class="text-2xl font-extrabold text-purple-400 mt-2 glow-text">जितेंद्र (Jitendra)</p>
+            </div>
+        </div>
+
+        <!-- Chat Interface (hidden by default) -->
+        <div id="chat-interface" class="chat-container w-full max-w-4xl hidden flex-col p-4">
+            <h3 id="chat-title" class="text-2xl font-bold mb-4 text-center glow-text" data-en="Chat with AI" data-hi="एआई के साथ चैट करें">एआई के साथ चैट करें</h3>
+            <div id="chat-messages" class="chat-messages flex flex-col space-y-2 mb-4">
+                <!-- Messages will be appended here -->
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Type your message...">
+                <button id="send-button" class="send-button">
+                    <span data-en="Send" data-hi="भेजें">भेजें</span>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 text-center" data-en="API Key Placeholder: Insert your API key in the JavaScript code for full functionality." data-hi="एपीआई कुंजी प्लेसहोल्डर: पूर्ण कार्यक्षमता के लिए अपनी एपीआई कुंजी जावास्क्रिप्ट कोड में डालें।">एपीआई कुंजी प्लेसहोल्डर: पूर्ण कार्यक्षमता के लिए अपनी एपीआई कुंजी जावास्क्रिप्ट कोड में डालें।</p>
+        </div>
+
+        <!-- About Developer Interface (hidden by default) -->
+        <div id="about-developer-interface" class="developer-info-container w-full max-w-4xl hidden flex-col p-8 text-center">
+            <h3 class="text-3xl font-bold mb-6 glow-text" data-en="About the Developer" data-hi="डेवलपर के बारे में">डेवलपर के बारे में</h3>
+            <div class="flex flex-col items-center space-y-4">
+                <img src="https://placehold.co/150x150/8b008b/ffffff?text=Jitendra" alt="Jitendra" class="rounded-full border-4 border-purple-500 shadow-lg mb-4">
+                <p class="text-2xl font-extrabold text-purple-400 glow-text">जितेंद्र (Jitendra)</p>
+                <p class="text-lg text-gray-300 leading-relaxed" data-en="Hello! I'm Jitendra, the creator and developer behind Master AI. My passion lies in building intelligent and user-friendly applications that simplify complex tasks and empower users. With a strong background in web technologies and a keen interest in artificial intelligence, I strive to create innovative solutions that enhance productivity and bring new possibilities to your fingertips. Master AI is a testament to this vision, aiming to be your all-in-one AI companion for coding, app development, learning, and much more. Thank you for exploring this app!" data-hi="नमस्ते! मैं जितेंद्र हूँ, मास्टर एआई का निर्माता और डेवलपर। मेरा जुनून ऐसे बुद्धिमान और उपयोगकर्ता-अनुकूल एप्लिकेशन बनाने में है जो जटिल कार्यों को सरल बनाते हैं और उपयोगकर्ताओं को सशक्त बनाते हैं। वेब प्रौद्योगिकियों में एक मजबूत पृष्ठभूमि और कृत्रिम बुद्धिमत्ता में गहरी रुचि के साथ, मैं ऐसे अभिनव समाधान बनाने का प्रयास करता हूँ जो उत्पादकता बढ़ाते हैं और आपकी उंगलियों पर नई संभावनाएं लाते हैं। मास्टर एआई इसी दृष्टि का एक प्रमाण है, जिसका लक्ष्य कोडिंग, ऐप विकास, सीखने और बहुत कुछ के लिए आपका ऑल-इन-वन एआई साथी बनना है। इस ऐप को देखने के लिए धन्यवाद!">
+                    नमस्ते! मैं जितेंद्र हूँ, मास्टर एआई का निर्माता और डेवलपर। मेरा जुनून ऐसे बुद्धिमान और उपयोगकर्ता-अनुकूल एप्लिकेशन बनाने में है जो जटिल कार्यों को सरल बनाते हैं और उपयोगकर्ताओं को सशक्त बनाते हैं। वेब प्रौद्योगिकियों में एक मजबूत पृष्ठभूमि और कृत्रिम बुद्धिमत्ता में गहरी रुचि के साथ, मैं ऐसे अभिनव समाधान बनाने का प्रयास करता हूँ जो उत्पादकता बढ़ाते हैं और आपकी उंगलियों पर नई संभावनाएं लाते हैं। मास्टर एआई इसी दृष्टि का एक प्रमाण है, जिसका लक्ष्य कोडिंग, ऐप विकास, सीखने और बहुत कुछ के लिए आपका ऑल-इन-वन एआई साथी बनना है। इस ऐप को देखने के लिए धन्यवाद!
+                </p>
+                <div class="mt-6 text-left w-full max-w-sm mx-auto space-y-2">
+                    <p class="text-md text-gray-300 flex items-center gap-2">
+                        <i class="fas fa-envelope text-purple-400"></i>
+                        <span data-en="Email:" data-hi="ईमेल:">ईमेल:</span> jitustar07@gmail.com
+                    </p>
+                    <p class="text-md text-gray-300 flex items-center gap-2">
+                        <i class="fas fa-phone text-purple-400"></i>
+                        <span data-en="Phone:" data-hi="फोन:">फोन:</span> +91 7690875148
+                    </p>
+                    <p>YOUTUBE CHANNEL LINK <a href="https://youtube.com/@rj_music_77?si=m7Q_7_QBHH2PEitK">{click here rj studio}</a>
+                    <p class="text-md text-gray-300 flex items-center gap-2">
+                        <i class="fas fa-map-marker-alt text-purple-400"></i>
+                        <span data-en="Address:" data-hi="पता:">पता:</span> Churu, Taranagar, Bhadang
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Interface (hidden by default) -->
+        <div id="settings-interface" class="settings-container w-full max-w-4xl hidden flex-col p-8">
+            <h3 class="text-3xl font-bold mb-6 text-center glow-text" data-en="App Settings" data-hi="ऐप सेटिंग्स">ऐप सेटिंग्स</h3>
+            <div class="flex flex-col items-center space-y-6">
+                <div class="color-theme-selector">
+                    <h4 class="text-xl font-semibold mb-4" data-en="Choose Theme Color:" data-hi="थीम रंग चुनें:">थीम रंग चुनें:</h4>
+                    <div class="flex space-x-4">
+                        <button class="w-16 h-16 rounded-full border-4 border-transparent hover:border-white transition-all duration-200 theme-button" data-theme="blue" style="background: linear-gradient(135deg, #1a1a2e, #0f3460);"></button>
+                        <button class="w-16 h-16 rounded-full border-4 border-transparent hover:border-white transition-all duration-200 theme-button" data-theme="green" style="background: linear-gradient(135deg, #0a2e2a, #0f403e);"></button>
+                        <button class="w-16 h-16 rounded-full border-4 border-transparent hover:border-white transition-all duration-200 theme-button" data-theme="orange" style="background: linear-gradient(135deg, #3e2a1a, #60340f);"></button>
+                    </div>
+                </div>
+
+                <div class="brightness-adjuster w-full max-w-xs">
+                    <h4 class="text-xl font-semibold mb-4" data-en="Adjust Brightness:" data-hi="चमक समायोजित करें:">चमक समायोजित करें:</h4>
+                    <input type="range" id="brightness-slider" min="50" max="150" value="100" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg">
+                </div>
+
+                <div class="desktop-mode-toggle mt-8">
+                    <h4 class="text-xl font-semibold mb-4" data-en="Desktop Site Mode:" data-hi="डेस्कटॉप साइट मोड:">डेस्कटॉप साइट मोड:</h4>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="desktop-mode-checkbox" class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        <span class="ml-3 text-lg font-medium text-gray-300" data-en="Enable" data-hi="सक्षम करें">सक्षम करें</span>
+                    </label>
+                </div>
+
+                <div class="mt-8">
+                    <h4 class="text-xl font-semibold mb-4" data-en="Other Options:" data-hi="अन्य विकल्प:">अन्य विकल्प:</h4>
+                    <ul class="text-left space-y-2">
+                        <li class="flex items-center gap-2 text-lg text-gray-300">
+                            <i class="fas fa-bell text-purple-400"></i>
+                            <span data-en="Notification Preferences" data-hi="सूचना प्राथमिकताएं">सूचना प्राथमिकताएं</span>
+                        </li>
+                        <li class="flex items-center gap-2 text-lg text-gray-300">
+                            <i class="fas fa-lock text-purple-400"></i>
+                            <span data-en="Privacy Settings" data-hi="गोपनीयता सेटिंग्स">गोपनीयता सेटिंग्स</span>
+                        </li>
+                        <li class="flex items-center gap-2 text-lg text-gray-300">
+                            <i class="fas fa-sync-alt text-purple-400"></i>
+                            <span data-en="Sync Data" data-hi="डेटा सिंक करें">डेटा सिंक करें</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggleMobile = document.getElementById('sidebarToggleMobile');
+        const sidebarMenuItems = document.querySelectorAll('.sidebar-item');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const welcomeTitle = document.querySelector('#welcome-screen h2');
+        const chatInterface = document.getElementById('chat-interface');
+        const chatTitle = document.getElementById('chat-title');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const languageToggleDesktop = document.getElementById('languageToggleDesktop');
+        const languageToggleMobile = document.getElementById('languageToggleMobile');
+        const currentLangSpans = document.querySelectorAll('.current-lang');
+        const aboutDeveloperInterface = document.getElementById('about-developer-interface');
+        const settingsInterface = document.getElementById('settings-interface');
+        const themeButtons = document.querySelectorAll('.theme-button');
+        const brightnessSlider = document.getElementById('brightness-slider');
+        const desktopModeCheckbox = document.getElementById('desktop-mode-checkbox');
+        const body = document.body;
+
+        let currentLanguage = 'en'; // Default language is English
+
+        // Translations object
+        const translations = {
+            en: {
+                'Your Ultimate AI Companion': 'Your Ultimate AI Companion',
+                'Home': 'Home',
+                'Coding Master': 'Coding Master',
+                'App Maker': 'App Maker',
+                'Doubt Clear': 'Doubt Clear',
+                'Question Maker': 'Question Maker',
+                'Web Maker': 'Web Maker',
+                'Reading Tips & Tricks': 'Reading Tips & Tricks',
+                'Notes Maker': 'Notes Maker',
+                'Content Creator': 'Content Creator',
+                'Image Generator': 'Image Generator',
+                'Data Analyzer': 'Data Analyzer',
+                'Brainstorming Assistant': 'Brainstorming Assistant',
+                'Career Guide': 'Career Guide',
+                'Language Translator': 'Language Translator',
+                'About Developer': 'About Developer',
+                'Settings': 'Settings',
+                'Welcome to Master AI': 'Welcome to Master AI',
+                'Explore the powerful AI tools below or select one from the sidebar to start chatting.': 'Explore the powerful AI tools below or select one from the sidebar to start chatting.',
+                'Chat with AI': 'Chat with AI',
+                'Type your message...': 'Type your message...',
+                'Send': 'Send',
+                'API Key Placeholder: Insert your API key in the JavaScript code for full functionality.': 'API Key Placeholder: Insert your API key in the JavaScript code for full functionality.',
+                'Unlock your coding potential with Coding Master! This AI is designed to be your personal programming tutor and assistant. Whether you\'re a beginner learning the basics or an experienced developer tackling complex algorithms, Coding Master can provide instant code explanations, debug errors, suggest optimal solutions, and even generate code snippets in various languages. It\'s an invaluable resource for anyone looking to improve their coding skills, understand new concepts, or streamline their development workflow. Get ready to write cleaner, more efficient code with intelligent guidance.': 'Unlock your coding potential with Coding Master! This AI is designed to be your personal programming tutor and assistant. Whether you\'re a beginner learning the basics or an experienced developer tackling complex algorithms, Coding Master can provide instant code explanations, debug errors, suggest optimal solutions, and even generate code snippets in various languages. It\'s an invaluable resource for anyone looking to improve their coding skills, understand new concepts, or streamline their development workflow. Get ready to write cleaner, more efficient code with intelligent guidance.',
+                'Dreaming of your own mobile app? App Maker AI turns your ideas into reality! This powerful tool guides you through the entire app development process, from conceptualization and UI/UX design to generating functional code. Describe your app\'s purpose, features, and target audience, and App Maker will help you build prototypes, suggest design elements, and even provide boilerplate code for different platforms. It simplifies complex development tasks, making app creation accessible to everyone, regardless of their technical background. Bring your innovative app ideas to life with ease.': 'Dreaming of your own mobile app? App Maker AI turns your ideas into reality! This powerful tool guides you through the entire app development process, from conceptualization and UI/UX design to generating functional code. Describe your app\'s purpose, features, and target audience, and App Maker will help you build prototypes, suggest design elements, and even provide boilerplate code for different platforms. It simplifies complex development tasks, making app creation accessible to everyone, regardless of their technical background. Bring your innovative app ideas to life with ease.',
+                'Stuck on a problem? Doubt Clear AI is here to provide instant, comprehensive explanations for any query across various subjects. Whether it\'s a complex mathematical equation, a scientific concept, a historical event, or a philosophical dilemma, simply ask your question. This AI leverages vast knowledge bases to break down difficult topics into easily understandable segments, offering step-by-step solutions, relevant examples, and clarifying analogies. It’s like having an expert tutor available 24/7, ready to illuminate any area of confusion and help you grasp concepts thoroughly. Never let a doubt hold you back again.': 'Stuck on a problem? Doubt Clear AI is here to provide instant, comprehensive explanations for any query across various subjects. Whether it\'s a complex mathematical equation, a scientific concept, a historical event, or a philosophical dilemma, simply ask your question. This AI leverages vast knowledge bases to break down difficult topics into easily understandable segments, offering step-by-step solutions, relevant examples, and clarifying analogies. It’s like having an expert tutor available 24/7, ready to illuminate any area of confusion and help you grasp concepts thoroughly. Never let a doubt hold you back again.',
+                'Need to generate questions for quizzes, exams, or study guides? Question Maker AI is your perfect companion! This intelligent tool can create a wide range of questions—multiple-choice, true/false, short answer, essay prompts—based on any provided text or topic. Simply input your content or describe the subject matter, and the AI will analyze it to formulate relevant and challenging questions. It\'s ideal for educators, students preparing for tests, or anyone looking to deepen their understanding by actively engaging with material through self-assessment. Save time and create effective learning tools effortlessly.': 'Need to generate questions for quizzes, exams, or study guides? Question Maker AI is your perfect companion! This intelligent tool can create a wide range of questions—multiple-choice, true/false, short answer, essay prompts—based on any provided text or topic. Simply input your content or describe the subject matter, and the AI will analyze it to formulate relevant and challenging questions. It\'s ideal for educators, students preparing for tests, or anyone looking to deepen their understanding by actively engaging with material through self-assessment. Save time and create effective learning tools effortlessly.',
+                'Build stunning websites with ease using Web Maker AI! Whether you need a personal portfolio, a business landing page, or a complex e-commerce site, this AI streamlines the web development process. Describe your vision, desired features, and aesthetic preferences, and Web Maker will generate HTML, CSS, and JavaScript code, suggest design templates, and even help with content creation. It\'s perfect for aspiring web developers, small business owners, or anyone who wants a professional online presence without extensive coding knowledge. Create beautiful, responsive websites in minutes, not months.': 'Build stunning websites with ease using Web Maker AI! Whether you need a personal portfolio, a business landing page, or a complex e-commerce site, this AI streamlines the web development process. Describe your vision, desired features, and aesthetic preferences, and Web Maker will generate HTML, CSS, and JavaScript code, suggest design templates, and even help with content creation. It\'s perfect for aspiring web developers, small business owners, or anyone who wants a professional online presence without extensive coding knowledge. Create beautiful, responsive websites in minutes, not months.',
+                'Enhance your reading comprehension and speed with Reading Tips & Tricks AI! This tool offers personalized strategies to help you become a more effective reader. It can analyze your reading habits, suggest techniques like speed reading, active recall, and SQ3R, and provide exercises to improve focus and retention. Whether you\'re studying for exams, trying to get through dense academic papers, or simply want to enjoy books more deeply, this AI provides actionable advice and insights tailored to your learning style. Transform your reading experience and absorb information more efficiently.': 'Enhance your reading comprehension and speed with Reading Tips & Tricks AI! This tool offers personalized strategies to help you become a more effective reader. It can analyze your reading habits, suggest techniques like speed reading, active recall, and SQ3R, and provide exercises to improve focus and retention. Whether you\'re studying for exams, trying to get through dense academic papers, or simply want to enjoy books more deeply, this AI provides actionable advice and insights tailored to your learning style. Transform your reading experience and absorb information more efficiently.',
+                'Organize your thoughts and information effortlessly with Notes Maker AI! This intelligent assistant helps you create concise, structured, and effective notes from any source—lectures, meetings, articles, or brainstorming sessions. Simply input your raw text or audio, and the AI can summarize key points, extract important terms, format notes into bullet points or mind maps, and even suggest connections between ideas. It\'s an indispensable tool for students, professionals, and researchers who want to improve their information retention and productivity. Never miss an important detail again with smart note-taking.': 'Organize your thoughts and information effortlessly with Notes Maker AI! This intelligent assistant helps you create concise, structured, and effective notes from any source—lectures, meetings, articles, or brainstorming sessions. Simply input your raw text or audio, and the AI can summarize key points, extract important terms, format notes into bullet points or mind maps, and even suggest connections between ideas. It\'s an indispensable tool for students, professionals, and researchers who want to improve their information retention and productivity. Never miss an important detail again with smart note-taking.',
+                'Struggling with writer\'s block? Content Creator AI is your ultimate muse! This tool generates engaging and original content for blogs, social media posts, marketing copy, articles, and more. Provide a topic, keywords, or a brief outline, and the AI will craft compelling narratives, catchy headlines, and persuasive calls to action. It adapts to various tones and styles, ensuring your content resonates with your target audience. Perfect for marketers, bloggers, and anyone needing high-quality written material quickly and efficiently. Unleash your creativity with AI-powered content generation.': 'Struggling with writer\'s block? Content Creator AI is your ultimate muse! This tool generates engaging and original content for blogs, social media posts, marketing copy, articles, and more. Provide a topic, keywords, or a brief outline, and the AI will craft compelling narratives, catchy headlines, and persuasive calls to action. It adapts to various tones and styles, ensuring your content resonates with your target audience. Perfect for marketers, bloggers, and anyone needing high-quality written material quickly and efficiently. Unleash your creativity with AI-powered content generation.',
+                'Visualize your imagination with Image Generator AI! This powerful tool transforms your textual descriptions into stunning visual art. Simply describe the image you envision—a futuristic city, a whimsical creature, a serene landscape—and the AI will generate unique, high-quality images in various artistic styles. It\'s perfect for designers, artists, content creators, or anyone who needs custom visuals without artistic skills. From abstract concepts to photorealistic scenes, bring your wildest ideas to life with the power of generative AI. Create captivating visuals effortlessly.': 'Visualize your imagination with Image Generator AI! This powerful tool transforms your textual descriptions into stunning visual art. Simply describe the image you envision—a futuristic city, a whimsical creature, a serene landscape—and the AI will generate unique, high-quality images in various artistic styles. It\'s perfect for designers, artists, content creators, or anyone who needs custom visuals without artistic skills. From abstract concepts to photorealistic scenes, bring your wildest ideas to life with the power of generative AI. Create captivating visuals effortlessly.',
+                'Make sense of complex data with Data Analyzer AI! This intelligent tool helps you uncover insights, identify trends, and visualize information from your datasets. Upload your data, and the AI can perform statistical analysis, generate charts and graphs, and provide clear, actionable summaries. It\'s invaluable for business professionals, researchers, and students who need to interpret large volumes of data without extensive statistical knowledge. Transform raw numbers into meaningful intelligence and make informed decisions with the power of AI-driven data analysis.': 'Make sense of complex data with Data Analyzer AI! This intelligent tool helps you uncover insights, identify trends, and visualize information from your datasets. Upload your data, and the AI can perform statistical analysis, generate charts and graphs, and provide clear, actionable summaries. It\'s invaluable for business professionals, researchers, and students who need to interpret large volumes of data without extensive statistical knowledge. Transform raw numbers into meaningful intelligence and make informed decisions with the power of AI-driven data analysis.',
+                'Unleash your creativity and generate innovative ideas with Brainstorming Assistant AI! This tool helps you overcome creative blocks and explore new perspectives on any topic. Simply input a problem, a theme, or a starting concept, and the AI will provide a diverse range of ideas, prompts, and thought-starters. It can help you organize your thoughts, identify connections, and develop concepts further, making it an indispensable partner for designers, writers, entrepreneurs, and anyone seeking fresh insights. Transform your ideation process and discover groundbreaking solutions effortlessly.': 'Unleash your creativity and generate innovative ideas with Brainstorming Assistant AI! This tool helps you overcome creative blocks and explore new perspectives on any topic. Simply input a problem, a theme, or a starting concept, and the AI will provide a diverse range of ideas, prompts, and thought-starters. It can help you organize your thoughts, identify connections, and develop concepts further, making it an indispensable partner for designers, writers, entrepreneurs, and anyone seeking fresh insights. Transform your ideation process and discover groundbreaking solutions effortlessly.',
+                'Navigate your professional journey with confidence using Career Guide AI! This intelligent assistant provides personalized career advice, helps you explore different industries, and offers insights into job market trends. Share your skills, interests, and aspirations, and the AI can suggest suitable career paths, recommend educational resources, and even assist with resume building and interview preparation. It\'s an invaluable tool for students planning their future, professionals seeking a career change, or anyone looking to advance in their current field. Chart your path to success with expert guidance.': 'Navigate your professional journey with confidence using Career Guide AI! This intelligent assistant provides personalized career advice, helps you explore different industries, and offers insights into job market trends. Share your skills, interests, and aspirations, and the AI can suggest suitable career paths, recommend educational resources, and even assist with resume building and interview preparation. It\'s an invaluable tool for students planning their future, professionals seeking a career change, or anyone looking to advance in their current field. Chart your path to success with expert guidance.',
+                'Break down language barriers with Language Translator AI! This tool provides accurate and instant translations for text across a multitude of languages. Whether you need to understand a foreign document, communicate with someone in a different language, or simply learn new phrases, this AI ensures seamless linguistic exchange. Input your text, select the target language, and receive precise translations that maintain context and nuance. It\'s an essential companion for travelers, international business professionals, language learners, and anyone looking to connect across cultures. Communicate globally with ease.': 'Break down language barriers with Language Translator AI! This tool provides accurate and instant translations for text across a multitude of languages. Whether you need to understand a foreign document, communicate with someone in a different language, or simply learn new phrases, this AI ensures seamless linguistic exchange. Input your text, select the target language, and receive precise translations that maintain context and nuance. It\'s an essential companion for travelers, international business professionals, language learners, and anyone looking to connect across cultures. Communicate globally with ease.',
+                'Developed by:': 'Developed by:',
+                'About the Developer': 'About the Developer',
+                'Hello! I\'m Jitendra, the creator and developer behind Master AI. My passion lies in building intelligent and user-friendly applications that simplify complex tasks and empower users. With a strong background in web technologies and a keen interest in artificial intelligence, I strive to create innovative solutions that enhance productivity and bring new possibilities to your fingertips. Master AI is a testament to this vision, aiming to be your all-in-one AI companion for coding, app development, learning, and much more. Thank you for exploring this app!': 'Hello! I\'m Jitendra, the creator and developer behind Master AI. My passion lies in building intelligent and user-friendly applications that simplify complex tasks and empower users. With a strong background in web technologies and a keen interest in artificial intelligence, I strive to create innovative solutions that enhance productivity and bring new possibilities to your fingertips. Master AI is a testament to this vision, aiming to be your all-in-one AI companion for coding, app development, learning, and much more. Thank you for exploring this app!',
+                'Email:': 'Email:',
+                'Phone:': 'Phone:',
+                'Address:': 'Address:',
+                'App Settings': 'App Settings',
+                'Choose Theme Color:': 'Choose Theme Color:',
+                'Adjust Brightness:': 'Adjust Brightness:',
+                'Desktop Site Mode:': 'Desktop Site Mode:',
+                'Enable': 'Enable',
+                'Other Options:': 'Other Options:',
+                'Notification Preferences': 'Notification Preferences',
+                'Privacy Settings': 'Privacy Settings',
+                'Sync Data': 'Sync Data'
+            },
+            hi: {
+                'Your Ultimate AI Companion': 'आपका परम एआई साथी',
+                'Home': 'होम',
+                'Coding Master': 'कोडिंग मास्टर',
+                'App Maker': 'ऐप मेकर',
+                'Doubt Clear': 'डाउट क्लियर',
+                'Question Maker': 'प्रश्न मेकर',
+                'Web Maker': 'वेब मेकर',
+                'Reading Tips & Tricks': 'पढ़ने के टिप्स और ट्रिक्स',
+                'Notes Maker': 'नोट्स मेकर',
+                'Content Creator': 'कंटेंट क्रिएटर',
+                'Image Generator': 'इमेज जनरेटर',
+                'Data Analyzer': 'डेटा एनालाइजर',
+                'Brainstorming Assistant': 'विचार-मंथन सहायक',
+                'Career Guide': 'करियर गाइड',
+                'Language Translator': 'भाषा अनुवादक',
+                'About Developer': 'डेवलपर के बारे में',
+                'Settings': 'सेटिंग्स',
+                'Welcome to Master AI': 'मास्टर एआई में आपका स्वागत है',
+                'Explore the powerful AI tools below or select one from the sidebar to start chatting.': 'नीचे दिए गए शक्तिशाली एआई टूल का अन्वेषण करें या चैटिंग शुरू करने के लिए साइडबार से एक का चयन करें।',
+                'Chat with AI': 'एआई के साथ चैट करें',
+                'Type your message...': 'अपना संदेश लिखें...',
+                'Send': 'भेजें',
+                'API Key Placeholder: Insert your API key in the JavaScript code for full functionality.': 'एपीआई कुंजी प्लेसहोल्डर: पूर्ण कार्यक्षमता के लिए अपनी एपीआई कुंजी जावास्क्रिप्ट कोड में डालें।',
+                'Unlock your coding potential with Coding Master! This AI is designed to be your personal programming tutor and assistant. Whether you\'re a beginner learning the basics or an experienced developer tackling complex algorithms, Coding Master can provide instant code explanations, debug errors, suggest optimal solutions, and even generate code snippets in various languages. It\'s an invaluable resource for anyone looking to improve their coding skills, understand new concepts, or streamline their development workflow. Get ready to write cleaner, more efficient code with intelligent guidance.': 'कोडिंग मास्टर के साथ अपनी कोडिंग क्षमता को अनलॉक करें! यह एआई आपका व्यक्तिगत प्रोग्रामिंग ट्यूटर और सहायक बनने के लिए डिज़ाइन किया गया है। चाहे आप मूल बातें सीखने वाले शुरुआती हों या जटिल एल्गोरिदम से निपटने वाले अनुभवी डेवलपर, कोडिंग मास्टर त्वरित कोड स्पष्टीकरण प्रदान कर सकता है, त्रुटियों को डीबग कर सकता है, इष्टतम समाधान सुझा सकता है, और यहां तक कि विभिन्न भाषाओं में कोड स्निपेट भी उत्पन्न कर सकता है। यह उन सभी के लिए एक अमूल्य संसाधन है जो अपने कोडिंग कौशल में सुधार करना चाहते हैं, नई अवधारणाओं को समझना चाहते हैं, या अपनी विकास कार्यप्रणाली को सुव्यवस्थित करना चाहते हैं। बुद्धिमान मार्गदर्शन के साथ स्वच्छ, अधिक कुशल कोड लिखने के लिए तैयार हो जाइए।',
+                'Dreaming of your own mobile app? App Maker AI turns your ideas into reality! This powerful tool guides you through the entire app development process, from conceptualization and UI/UX design to generating functional code. Describe your app\'s purpose, features, and target audience, and App Maker will help you build prototypes, suggest design elements, and even provide boilerplate code for different platforms. It simplifies complex development tasks, making app creation accessible to everyone, regardless of their technical background. Bring your innovative app ideas to life with ease.': 'अपने खुद के मोबाइल ऐप का सपना देख रहे हैं? ऐप मेकर एआई आपके विचारों को वास्तविकता में बदल देता है! यह शक्तिशाली टूल आपको ऐप विकास की पूरी प्रक्रिया में मार्गदर्शन करता है, अवधारणाकरण और यूआई/यूएक्स डिज़ाइन से लेकर कार्यात्मक कोड उत्पन्न करने तक। अपने ऐप के उद्देश्य, सुविधाओं और लक्षित दर्शकों का वर्णन करें, और ऐप मेकर आपको प्रोटोटाइप बनाने, डिज़ाइन तत्वों का सुझाव देने और विभिन्न प्लेटफार्मों के लिए बॉयलरप्लेट कोड प्रदान करने में भी मदद करेगा। यह जटिल विकास कार्यों को सरल बनाता है, जिससे ऐप बनाना सभी के लिए सुलभ हो जाता है, चाहे उनकी तकनीकी पृष्ठभूमि कुछ भी हो। अपने नवीन ऐप विचारों को आसानी से जीवन में लाएं।',
+                'Stuck on a problem? Doubt Clear AI is here to provide instant, comprehensive explanations for any query across various subjects. Whether it\'s a complex mathematical equation, a scientific concept, a historical event, or a philosophical dilemma, simply ask your question. This AI leverages vast knowledge bases to break down difficult topics into easily understandable segments, offering step-by-step solutions, relevant examples, and clarifying analogies. It’s like having an expert tutor available 24/7, ready to illuminate any area of confusion and help you grasp concepts thoroughly. Never let a doubt hold you back again.': 'किसी समस्या पर अटके हुए हैं? डाउट क्लियर एआई विभिन्न विषयों पर किसी भी प्रश्न के लिए तत्काल, व्यापक स्पष्टीकरण प्रदान करने के लिए यहां है। चाहे वह एक जटिल गणितीय समीकरण हो, एक वैज्ञानिक अवधारणा हो, एक ऐतिहासिक घटना हो, या एक दार्शनिक दुविधा हो, बस अपना प्रश्न पूछें। यह एआई कठिन विषयों को आसानी से समझने योग्य खंडों में तोड़ने के लिए विशाल ज्ञान आधारों का लाभ उठाता है, चरण-दर-चरण समाधान, प्रासंगिक उदाहरण और स्पष्टीकरण उपमाएं प्रदान करता है। यह 24/7 उपलब्ध एक विशेषज्ञ ट्यूटर होने जैसा है, जो भ्रम के किसी भी क्षेत्र को रोशन करने और अवधारणाओं को अच्छी तरह से समझने में आपकी मदद करने के लिए तैयार है। कभी भी किसी संदेह को आपको फिर से पीछे न हटने दें।',
+                'Need to generate questions for quizzes, exams, or study guides? Question Maker AI is your perfect companion! This intelligent tool can create a wide range of questions—multiple-choice, true/false, short answer, essay prompts—based on any provided text or topic. Simply input your content or describe the subject matter, and the AI will analyze it to formulate relevant and challenging questions. It\'s ideal for educators, students preparing for tests, or anyone looking to deepen their understanding by actively engaging with material through self-assessment. Save time and create effective learning tools effortlessly.': 'क्विज़, परीक्षा या अध्ययन गाइड के लिए प्रश्न बनाने की आवश्यकता है? क्वेश्चन मेकर एआई आपका आदर्श साथी है! यह बुद्धिमान टूल किसी भी प्रदान किए गए पाठ या विषय के आधार पर विभिन्न प्रकार के प्रश्न—बहुविकल्पीय, सही/गलत, लघु उत्तर, निबंध संकेत—बना सकता है। बस अपनी सामग्री इनपुट करें या विषय वस्तु का वर्णन करें, और एआई प्रासंगिक और चुनौतीपूर्ण प्रश्न तैयार करने के लिए इसका विश्लेषण करेगा। यह शिक्षकों, परीक्षाओं की तैयारी करने वाले छात्रों, या आत्म-मूल्यांकन के माध्यम से सामग्री के साथ सक्रिय रूप से जुड़कर अपनी समझ को गहरा करने वाले किसी भी व्यक्ति के लिए आदर्श है। समय बचाएं और आसानी से प्रभावी शिक्षण उपकरण बनाएं।',
+                'Build stunning websites with ease using Web Maker AI! Whether you need a personal portfolio, a business landing page, or a complex e-commerce site, this AI streamlines the web development process. Describe your vision, desired features, and aesthetic preferences, and Web Maker will generate HTML, CSS, and JavaScript code, suggest design templates, and even help with content creation. It\'s perfect for aspiring web developers, small business owners, or anyone who wants a professional online presence without extensive coding knowledge. Create beautiful, responsive websites in minutes, not months.': 'वेब मेकर एआई का उपयोग करके आसानी से शानदार वेबसाइटें बनाएं! चाहे आपको एक व्यक्तिगत पोर्टफोलियो, एक व्यावसायिक लैंडिंग पेज, या एक जटिल ई-कॉमर्स साइट की आवश्यकता हो, यह एआई वेब विकास प्रक्रिया को सुव्यवस्थित करता है। अपनी दृष्टि, वांछित सुविधाओं और सौंदर्य संबंधी प्राथमिकताओं का वर्णन करें, और वेब मेकर HTML, CSS और जावास्क्रिप्ट कोड उत्पन्न करेगा, डिज़ाइन टेम्प्लेट सुझाएगा, और यहां तक कि सामग्री निर्माण में भी मदद करेगा। यह महत्वाकांक्षी वेब डेवलपर्स, छोटे व्यवसाय मालिकों, या व्यापक कोडिंग ज्ञान के बिना एक पेशेवर ऑनलाइन उपस्थिति चाहने वाले किसी भी व्यक्ति के लिए एकदम सही है। महीनों नहीं, मिनटों में सुंदर, उत्तरदायी वेबसाइटें बनाएं।',
+                'Enhance your reading comprehension and speed with Reading Tips & Tricks AI! This tool offers personalized strategies to help you become a more effective reader. It can analyze your reading habits, suggest techniques like speed reading, active recall, and SQ3R, and provide exercises to improve focus and retention. Whether you\'re studying for exams, trying to get through dense academic papers, or simply want to enjoy books more deeply, this AI provides actionable advice and insights tailored to your learning style. Transform your reading experience and absorb information more efficiently.': 'रीडिंग टिप्स और ट्रिक्स एआई के साथ अपनी पढ़ने की समझ और गति बढ़ाएँ! यह टूल आपको अधिक प्रभावी पाठक बनने में मदद करने के लिए व्यक्तिगत रणनीतियाँ प्रदान करता है। यह आपकी पढ़ने की आदतों का विश्लेषण कर सकता है, स्पीड रीडिंग, सक्रिय स्मरण और SQ3R जैसी तकनीकों का सुझाव दे सकता है, और ध्यान और प्रतिधारण में सुधार के लिए अभ्यास प्रदान कर सकता है। चाहे आप परीक्षाओं के लिए अध्ययन कर रहे हों, घने अकादमिक पत्रों को पढ़ने की कोशिश कर रहे हों, या बस किताबों का अधिक गहराई से आनंद लेना चाहते हों, यह एआई आपकी सीखने की शैली के अनुरूप व्यावहारिक सलाह और अंतर्दृष्टि प्रदान करता है। अपने पढ़ने के अनुभव को बदलें और जानकारी को अधिक कुशलता से अवशोषित करें।',
+                'Organize your thoughts and information effortlessly with Notes Maker AI! This intelligent assistant helps you create concise, structured, and effective notes from any source—lectures, meetings, articles, or brainstorming sessions. Simply input your raw text or audio, and the AI can summarize key points, extract important terms, format notes into bullet points or mind maps, and even suggest connections between ideas. It\'s an indispensable tool for students, professionals, and researchers who want to improve their information retention and productivity. Never miss an important detail again with smart note-taking.': 'नोट्स मेकर एआई के साथ अपने विचारों और जानकारी को सहजता से व्यवस्थित करें! यह बुद्धिमान सहायक आपको किसी भी स्रोत—व्याख्यान, बैठकें, लेख, या विचार-मंथन सत्र—से संक्षिप्त, संरचित और प्रभावी नोट्स बनाने में मदद करता है। बस अपना कच्चा पाठ या ऑडियो इनपुट करें, और एआई मुख्य बिंदुओं को सारांशित कर सकता है, महत्वपूर्ण शब्दों को निकाल सकता है, नोट्स को बुलेट पॉइंट या माइंड मैप में प्रारूपित कर सकता है, और यहां तक कि विचारों के बीच संबंध भी सुझा सकता है। यह छात्रों, पेशेवरों और शोधकर्ताओं के लिए एक अनिवार्य उपकरण है जो अपनी जानकारी प्रतिधारण और उत्पादकता में सुधार करना चाहते हैं। स्मार्ट नोट-टेकिंग के साथ फिर कभी कोई महत्वपूर्ण विवरण न चूकें।',
+                'Struggling with writer\'s block? Content Creator AI is your ultimate muse! This tool generates engaging and original content for blogs, social media posts, marketing copy, articles, and more. Provide a topic, keywords, or a brief outline, and the AI will craft compelling narratives, catchy headlines, and persuasive calls to action. It adapts to various tones and styles, ensuring your content resonates with your target audience. Perfect for marketers, bloggers, and anyone needing high-quality written material quickly and efficiently. Unleash your creativity with AI-powered content generation.': 'लेखक के ब्लॉक से जूझ रहे हैं? कंटेंट क्रिएटर एआई आपकी अंतिम प्रेरणा है! यह टूल ब्लॉग, सोशल मीडिया पोस्ट, मार्केटिंग कॉपी, लेख और बहुत कुछ के लिए आकर्षक और मूल सामग्री उत्पन्न करता है। एक विषय, कीवर्ड, या एक संक्षिप्त रूपरेखा प्रदान करें, और एआई आकर्षक कथाएं, आकर्षक शीर्षक और प्रेरक कॉल टू एक्शन तैयार करेगा। यह विभिन्न स्वरों और शैलियों के अनुकूल होता है, यह सुनिश्चित करते हुए कि आपकी सामग्री आपके लक्षित दर्शकों के साथ प्रतिध्वनित होती है। विपणक, ब्लॉगर और उच्च-गुणवत्ता वाली लिखित सामग्री की त्वरित और कुशलता से आवश्यकता वाले किसी भी व्यक्ति के लिए बिल्कुल सही। एआई-संचालित सामग्री निर्माण के साथ अपनी रचनात्मकता को उजागर करें।',
+                'Visualize your imagination with Image Generator AI! This powerful tool transforms your textual descriptions into stunning visual art. Simply describe the image you envision—a futuristic city, a whimsical creature, a serene landscape—and the AI will generate unique, high-quality images in various artistic styles. It\'s perfect for designers, artists, content creators, or anyone who needs custom visuals without artistic skills. From abstract concepts to photorealistic scenes, bring your wildest ideas to life with the power of generative AI. Create captivating visuals effortlessly.': 'इमेज जनरेटर एआई के साथ अपनी कल्पना को देखें! यह शक्तिशाली टूल आपके शाब्दिक विवरणों को शानदार दृश्य कला में बदल देता है। बस उस छवि का वर्णन करें जिसकी आप कल्पना करते हैं—एक भविष्य का शहर, एक सनकी प्राणी, एक शांत परिदृश्य—और एआई विभिन्न कलात्मक शैलियों में अद्वितीय, उच्च-गुणवत्ता वाली छवियां उत्पन्न करेगा। यह डिजाइनरों, कलाकारों, सामग्री निर्माताओं, या कलात्मक कौशल के बिना कस्टम दृश्यों की आवश्यकता वाले किसी भी व्यक्ति के लिए एकदम सही है। अमूर्त अवधारणाओं से लेकर फोटोरियलिस्टिक दृश्यों तक, जनरेटिव एआई की शक्ति के साथ अपने सबसे जंगली विचारों को जीवन में लाएं। आसानी से आकर्षक दृश्य बनाएं।',
+                'Make sense of complex data with Data Analyzer AI! This intelligent tool helps you uncover insights, identify trends, and visualize information from your datasets. Upload your data, and the AI can perform statistical analysis, generate charts and graphs, and provide clear, actionable summaries. It\'s invaluable for business professionals, researchers, and students who need to interpret large volumes of data without extensive statistical knowledge. Transform raw numbers into meaningful intelligence and make informed decisions with the power of AI-driven data analysis.': 'डेटा एनालाइजर एआई के साथ जटिल डेटा को समझें! यह बुद्धिमान टूल आपको अपने डेटासेट से अंतर्दृष्टि उजागर करने, रुझानों की पहचान करने और जानकारी को देखने में मदद करता है। अपना डेटा अपलोड करें, और एआई सांख्यिकीय विश्लेषण कर सकता है, चार्ट और ग्राफ़ उत्पन्न कर सकता है, और स्पष्ट, कार्रवाई योग्य सारांश प्रदान कर सकता है। यह व्यावसायिक पेशेवरों, शोधकर्ताओं और छात्रों के लिए अमूल्य है जिन्हें व्यापक सांख्यिकीय ज्ञान के बिना बड़ी मात्रा में डेटा की व्याख्या करने की आवश्यकता है। कच्चे नंबरों को सार्थक बुद्धिमत्ता में बदलें और सूचित निर्णय लें।',
+                'Unleash your creativity and generate innovative ideas with Brainstorming Assistant AI! This tool helps you overcome creative blocks and explore new perspectives on any topic. Simply input a problem, a theme, or a starting concept, and the AI will provide a diverse range of ideas, prompts, and thought-starters. It can help you organize your thoughts, identify connections, and develop concepts further, making it an indispensable partner for designers, writers, entrepreneurs, and anyone seeking fresh insights. Transform your ideation process and discover groundbreaking solutions effortlessly.': 'ब्रेनस्टॉर्मिंग असिस्टेंट एआई के साथ अपनी रचनात्मकता को उजागर करें और नवीन विचार उत्पन्न करें! यह टूल आपको रचनात्मक बाधाओं को दूर करने और किसी भी विषय पर नए दृष्टिकोण तलाशने में मदद करता है। बस एक समस्या, एक विषय, या एक प्रारंभिक अवधारणा इनपुट करें, और एआई विचारों, संकेतों और विचार-शुरुआत करने वालों की एक विविध श्रेणी प्रदान करेगा। यह आपको अपने विचारों को व्यवस्थित करने, कनेक्शनों की पहचान करने और अवधारणाओं को और विकसित करने में मदद कर सकता है, जिससे यह डिजाइनरों, लेखकों, उद्यमियों और नए अंतर्दृष्टि की तलाश करने वाले किसी भी व्यक्ति के लिए एक अनिवार्य भागीदार बन जाता है। अपनी विचार प्रक्रिया को बदलें और आसानी से अभूतपूर्व समाधान खोजें।',
+                'Navigate your professional journey with confidence using Career Guide AI! This intelligent assistant provides personalized career advice, helps you explore different industries, and offers insights into job market trends. Share your skills, interests, and aspirations, and the AI can suggest suitable career paths, recommend educational resources, and even assist with resume building and interview preparation. It\'s an invaluable tool for students planning their future, professionals seeking a career change, or anyone looking to advance in their current field. Chart your path to success with expert guidance.': 'करियर गाइड एआई का उपयोग करके आत्मविश्वास के साथ अपनी पेशेवर यात्रा को नेविगेट करें! यह बुद्धिमान सहायक व्यक्तिगत करियर सलाह प्रदान करता है, आपको विभिन्न उद्योगों का पता लगाने में मदद करता है, और नौकरी बाजार के रुझानों में अंतर्दृष्टि प्रदान करता है। अपने कौशल, रुचियों और आकांक्षाओं को साझा करें, और एआई उपयुक्त करियर पथ सुझा सकता है, शैक्षिक संसाधनों की सिफारिश कर सकता है, और यहां तक कि रिज्यूमे बनाने और साक्षात्कार की तैयारी में भी सहायता कर सकता है। यह छात्रों के लिए अपने भविष्य की योजना बनाने, करियर बदलने की तलाश करने वाले पेशेवरों, या अपने वर्तमान क्षेत्र में आगे बढ़ने की तलाश करने वाले किसी भी व्यक्ति के लिए एक अमूल्य उपकरण है। विशेषज्ञ मार्गदर्शन के साथ सफलता के लिए अपना मार्ग प्रशस्त करें।',
+                'Break down language barriers with Language Translator AI! This tool provides accurate and instant translations for text across a multitude of languages. Whether you need to understand a foreign document, communicate with someone in a different language, or simply learn new phrases, this AI ensures seamless linguistic exchange. Input your text, select the target language, and receive precise translations that maintain context and nuance. It\'s an essential companion for travelers, international business professionals, language learners, and anyone looking to connect across cultures. Communicate globally with ease.': 'भाषा अनुवादक एआई के साथ भाषा की बाधाओं को तोड़ें! यह टूल कई भाषाओं में टेक्स्ट के लिए सटीक और तत्काल अनुवाद प्रदान करता है। चाहे आपको किसी विदेशी दस्तावेज़ को समझने की आवश्यकता हो, किसी भिन्न भाषा में किसी के साथ संवाद करना हो, या बस नए वाक्यांश सीखना हो, यह एआई सहज भाषाई विनिमय सुनिश्चित करता है। अपना टेक्स्ट इनपुट करें, लक्ष्य भाषा का चयन करें, और सटीक अनुवाद प्राप्त करें जो संदर्भ और बारीकियों को बनाए रखते हैं। यह यात्रियों, अंतर्राष्ट्रीय व्यापार पेशेवरों, भाषा सीखने वालों और संस्कृतियों में जुड़ने की तलाश करने वाले किसी भी व्यक्ति के लिए एक आवश्यक साथी है। आसानी से विश्व स्तर पर संवाद करें।',
+                'Developed by:': 'द्वारा विकसित:',
+                'About the Developer': 'डेवलपर के बारे में',
+                'Hello! I\'m Jitendra, the creator and developer behind Master AI. My passion lies in building intelligent and user-friendly applications that simplify complex tasks and empower users. With a strong background in web technologies and a keen interest in artificial intelligence, I strive to create innovative solutions that enhance productivity and bring new possibilities to your fingertips. Master AI is a testament to this vision, aiming to be your all-in-one AI companion for coding, app development, learning, and much more. Thank you for exploring this app!': 'नमस्ते! मैं जितेंद्र हूँ, मास्टर एआई का निर्माता और डेवलपर। मेरा जुनून ऐसे बुद्धिमान और उपयोगकर्ता-अनुकूल एप्लिकेशन बनाने में है जो जटिल कार्यों को सरल बनाते हैं और उपयोगकर्ताओं को सशक्त बनाते हैं। वेब प्रौद्योगिकियों में एक मजबूत पृष्ठभूमि और कृत्रिम बुद्धिमत्ता में गहरी रुचि के साथ, मैं ऐसे अभिनव समाधान बनाने का प्रयास करता हूँ जो उत्पादकता बढ़ाते हैं और आपकी उंगलियों पर नई संभावनाएं लाते हैं। मास्टर एआई इसी दृष्टि का एक प्रमाण है, जिसका लक्ष्य कोडिंग, ऐप विकास, सीखने और बहुत कुछ के लिए आपका ऑल-इन-वन एआई साथी बनना है। इस ऐप को देखने के लिए धन्यवाद!',
+                'Email:': 'ईमेल:',
+                'Phone:': 'फोन:',
+                'Address:': 'पता:',
+                'App Settings': 'ऐप सेटिंग्स',
+                'Choose Theme Color:': 'थीम रंग चुनें:',
+                'Adjust Brightness:': 'चमक समायोजित करें:',
+                'Desktop Site Mode:': 'डेस्कटॉप साइट मोड:',
+                'Enable': 'सक्षम करें',
+                'Other Options:': 'अन्य विकल्प:',
+                'Notification Preferences': 'सूचना प्राथमिकताएं',
+                'Privacy Settings': 'गोपनीयता सेटिंग्स',
+                'Sync Data': 'डेटा सिंक करें'
+            }
+        };
+
+        // Function to apply translations
+        function applyTranslations() {
+            const elementsToTranslate = document.querySelectorAll('[data-en], [data-hi]');
+            elementsToTranslate.forEach(element => {
+                const key = element.getAttribute(`data-${currentLanguage}`);
+                if (key) {
+                    element.textContent = translations[currentLanguage][key] || key;
+                }
+            });
+            // Update placeholder for input
+            if (chatInput) {
+                chatInput.placeholder = translations[currentLanguage]['Type your message...'];
+            }
+            // Update current language display
+            currentLangSpans.forEach(span => span.textContent = currentLanguage.toUpperCase());
+        }
+
+        // Toggle language
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'hi' : 'en';
+            applyTranslations();
+        }
+
+        languageToggleDesktop.addEventListener('click', toggleLanguage);
+        if (languageToggleMobile) { // Check if mobile toggle exists
+            languageToggleMobile.addEventListener('click', toggleLanguage);
+        }
+
+        // Sidebar toggle for mobile
+        if (sidebarToggleMobile) { // Check if mobile toggle exists
+            sidebarToggleMobile.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+
+        // Function to hide all main content interfaces
+        function hideAllInterfaces() {
+            welcomeScreen.classList.add('hidden');
+            chatInterface.classList.add('hidden');
+            aboutDeveloperInterface.classList.add('hidden');
+            settingsInterface.classList.add('hidden');
+        }
+
+        // Handle sidebar item clicks
+        sidebarMenuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active class from all items
+                sidebarMenuItems.forEach(i => i.classList.remove('active'));
+                // Add active class to clicked item
+                item.classList.add('active');
+
+                const selectedAI = item.dataset.ai;
+                hideAllInterfaces(); // Hide all interfaces first
+
+                if (selectedAI === 'welcome') {
+                    welcomeScreen.classList.remove('hidden');
+                    welcomeScreen.classList.add('animate-fade-in'); // Re-add animation
+                } else if (selectedAI === 'about-developer') {
+                    aboutDeveloperInterface.classList.remove('hidden');
+                } else if (selectedAI === 'settings') {
+                    settingsInterface.classList.remove('hidden');
+                }
+                else {
+                    chatInterface.classList.remove('hidden');
+
+                    // Update chat title
+                    const aiToolName = item.querySelector('span').textContent;
+                    chatTitle.textContent = `${aiToolName}`; // Use the translated name
+                    chatTitle.setAttribute('data-en', translations['en'][aiToolName] || aiToolName);
+                    chatTitle.setAttribute('data-hi', translations['hi'][aiToolName] || aiToolName);
+
+                    // Clear previous chat messages
+                    chatMessages.innerHTML = '';
+                }
+
+                // Close sidebar on mobile after selection
+                if (window.innerWidth < 768) {
+                    sidebar.classList.remove('open');
+                }
+            });
+        });
+
+        // Welcome text click animation
+        welcomeTitle.addEventListener('click', () => {
+            welcomeTitle.classList.remove('welcome-text-pulse'); // Stop continuous pulse
+            welcomeTitle.classList.add('welcome-text-special'); // Add click animation
+            setTimeout(() => {
+                welcomeTitle.classList.remove('welcome-text-special');
+                welcomeTitle.classList.add('welcome-text-pulse'); // Resume pulse after animation
+            }, 300); // Duration of the click animation
+        });
+
+
+        // Simulate AI response (replace with actual API call)
+        sendButton.addEventListener('click', async () => {
+            const userMessage = chatInput.value.trim();
+            if (userMessage) {
+                // Display user message
+                const userMsgDiv = document.createElement('div');
+                userMsgDiv.classList.add('user-message', 'rounded-lg', 'p-3', 'text-white', 'self-end', 'max-w-xs', 'break-words');
+                userMsgDiv.textContent = userMessage;
+                chatMessages.appendChild(userMsgDiv);
+
+                chatInput.value = ''; // Clear input
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom
+
+                // Simulate AI typing/thinking
+                const aiTypingDiv = document.createElement('div');
+                aiTypingDiv.classList.add('ai-message', 'rounded-lg', 'p-3', 'text-white', 'self-start', 'max-w-xs', 'break-words');
+                aiTypingDiv.textContent = 'AI is typing...';
+                chatMessages.appendChild(aiTypingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // --- Placeholder for Gemini API Call ---
+                // Replace this with your actual Gemini API integration
+                const prompt = userMessage;
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = "AIzaSyANfeb7YGVOm3XtMNqmN3D1XOeIo8m_Qkc"; // <--- INSERT YOUR GEMINI API KEY HERE ---
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    let aiResponseText = "Sorry, I couldn't get a response from the AI.";
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        aiResponseText = result.candidates[0].content.parts[0].text;
+                    } else {
+                        console.error("Unexpected API response structure:", result);
+                        aiResponseText = "Error: Could not parse AI response.";
+                    }
+
+                    // Update AI message
+                    aiTypingDiv.textContent = aiResponseText;
+
+                } catch (error) {
+                    console.error("Error calling Gemini API:", error);
+                    aiTypingDiv.textContent = "Error: Failed to connect to AI.";
+                }
+                // --- End of API Call Placeholder ---
+
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom again
+            }
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+
+        // Theme switching logic
+        themeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const theme = button.dataset.theme;
+                // Remove all theme classes first
+                body.classList.remove('theme-blue', 'theme-green', 'theme-orange');
+                // Add the selected theme class
+                body.classList.add(`theme-${theme}`);
+            });
+        });
+
+        // Brightness adjustment logic
+        brightnessSlider.addEventListener('input', (e) => {
+            const brightnessValue = e.target.value; // Value between 50 and 150
+            body.style.setProperty('--brightness-filter', `brightness(${brightnessValue}%)`);
+        });
+
+        // Desktop Mode Toggle Logic
+        desktopModeCheckbox.addEventListener('change', () => {
+            if (desktopModeCheckbox.checked) {
+                body.classList.add('desktop-mode');
+            } else {
+                body.classList.remove('desktop-mode');
+            }
+            // Ensure sidebar state is consistent with desktop mode
+            if (body.classList.contains('desktop-mode')) {
+                sidebar.classList.add('open');
+            } else if (window.innerWidth < 768) {
+                // If not desktop mode and on mobile, close sidebar
+                sidebar.classList.remove('open');
+            }
+        });
+
+
+        // Initial language application
+        applyTranslations();
+
+        // Ensure sidebar is open on desktop by default
+        if (window.innerWidth >= 768) {
+            sidebar.classList.add('open');
+        }
+    </script>
+</body>
+</html>
